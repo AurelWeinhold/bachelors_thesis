@@ -4,13 +4,13 @@ cmake_minimum_required(VERSION 3.16)
 project(examples)
 
 # Tell cmake where to find BpfObject module
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../tools/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../tools/cmake)
 
 # Build vendored libbpf
 include(ExternalProject)
 ExternalProject_Add(libbpf
   PREFIX libbpf
-  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../libbpf/src
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../libbpf/src
   CONFIGURE_COMMAND ""
   BUILD_COMMAND make
     BUILD_STATIC_ONLY=1
@@ -27,7 +27,7 @@ ExternalProject_Add(libbpf
 
 ExternalProject_Add(bpftool
   PREFIX bpftool
-  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../bpftool/src
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../bpftool/src
   CONFIGURE_COMMAND ""
   BUILD_COMMAND make bootstrap
     OUTPUT=${CMAKE_CURRENT_BINARY_DIR}/bpftool/
@@ -40,7 +40,7 @@ find_program(CARGO_EXISTS cargo)
 if(CARGO_EXISTS)
   ExternalProject_Add(blazesym
     PREFIX blazesym
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../blazesym
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../blazesym
     CONFIGURE_COMMAND ""
     BUILD_COMMAND cargo build --features=cheader --release
     BUILD_IN_SOURCE TRUE
@@ -52,7 +52,7 @@ endif()
 # Set BpfObject input parameters -- note this is usually not necessary unless
 # you're in a highly vendored environment (like libbpf-bootstrap)
 set(BPFOBJECT_BPFTOOL_EXE ${CMAKE_CURRENT_BINARY_DIR}/bpftool/bootstrap/bpftool)
-set(BPFOBJECT_VMLINUX_H ${CMAKE_CURRENT_SOURCE_DIR}/../../vmlinux/vmlinux.h)
+set(BPFOBJECT_VMLINUX_H ${CMAKE_CURRENT_SOURCE_DIR}/../vmlinux/vmlinux.h)
 set(LIBBPF_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/libbpf)
 set(LIBBPF_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/libbpf/libbpf.a)
 find_package(BpfObject REQUIRED)
@@ -73,8 +73,8 @@ foreach(app ${apps})
   target_link_libraries(${app_stem} ${app_stem}_skel)
   if(${app_stem} STREQUAL profile)
     target_include_directories(${app_stem} PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../blazesym/target/release/)
+      ${CMAKE_CURRENT_SOURCE_DIR}/../blazesym/target/release/)
     target_link_libraries(${app_stem}
-      ${CMAKE_CURRENT_SOURCE_DIR}/../../blazesym/target/release/libblazesym.a)
+      ${CMAKE_CURRENT_SOURCE_DIR}/../blazesym/target/release/libblazesym.a)
   endif()
 endforeach()
