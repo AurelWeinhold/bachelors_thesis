@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <bpf/libbpf.h>
 #include <stdlib.h>
-#include "xdp_dropall.skel.h"
+#include "thesis.skel.h"
 
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
@@ -26,7 +26,7 @@ static void sig_handler(int sig)
 
 int main(int argc, char **argv)
 {
-	struct xdp_dropall_bpf *obj;
+	struct thesis_bpf *obj;
 
 	// Parse command line arguments
 	if (argc < 3) {
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sig_handler);
 
 	/* Load and verify BPF application */
-	obj = xdp_dropall_bpf__open();
+	obj = thesis_bpf__open();
 	if (!obj) {
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		exit(EXIT_FAILURE);
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 	obj->rodata->port = port;
 
 	/* Load & verify BPF programs */
-	int err = xdp_dropall_bpf__load(obj);
+	int err = thesis_bpf__load(obj);
 	if (err) {
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
 		goto cleanup;
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 
 cleanup:
 	/* Clean up */
-	xdp_dropall_bpf__destroy(obj);
+	thesis_bpf__destroy(obj);
 
 	return err < 0 ? -err : 0;
 }
