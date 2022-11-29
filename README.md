@@ -9,10 +9,10 @@ Bachelors Thesis
 
 
 
+## Building
 
-# Building
+### Install Dependencies
 
-## Install Dependencies
 You will need `clang`, `libelf` and `zlib` to build, package names
 may vary across Linux distributions.
 
@@ -38,7 +38,7 @@ $ sudo ./bootstrap
 <...>
 ```
 
-# Troubleshooting
+## Troubleshooting
 
 Libbpf debug logs are quire helpful to pinpoint the exact source of problems, so
 it's usually a good idea to look at them before starting to debug or posting
