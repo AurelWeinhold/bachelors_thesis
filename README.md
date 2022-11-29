@@ -4,14 +4,14 @@ Bachelors Thesis
 This is the repository of my, Aurel Weinhold, Bachelors Thesis.
 
 To bootstrap the eBPF filter and user space application,
-(libbpf-bootstrap)[https://github.com/libbpf/libbpf-bootstrap.git] is used.
+[libbpf-bootstrap](https://github.com/libbpf/libbpf-bootstrap.git) is used.
 
 
 ## Running
 
 To run simply run the executable with `sudo`:
 ```shell
-sudo ./thesis ifindex port
+$ sudo ./thesis ifindex port
 ```
 Find `ifindex` by running `ip link show` and select the appropriate interface.
 
@@ -46,10 +46,8 @@ $ dnf install clang elfutils-libelf elfutils-libelf-devel zlib-devel
 ```shell
 $ git submodule update --init --recursive       # check out libbpf
 $ mkdir build && cd build
-$ cmake ../examples/c
+$ cmake ../src
 $ make
-$ sudo ./bootstrap
-<...>
 ```
 
 
