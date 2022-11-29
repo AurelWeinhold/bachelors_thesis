@@ -29,14 +29,20 @@ int main(int argc, char **argv)
 	struct xdp_dropall_bpf *obj;
 
 	// Parse command line arguments
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s ifindex\n", argv[0]);
+	if (argc < 3) {
+		fprintf(stderr, "Usage: %s ifindex port\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
 	int ifindex = atoi(argv[1]);
 	if (ifindex <= 0) {
 		fprintf(stderr, "ifindex must be at least 1\n");
+		exit(EXIT_FAILURE);
+	}
+
+	int port = atoi(argv[2]);
+	if (port < 0) {
+		fprintf(stderr, "port needs to be at least 0\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -54,6 +60,8 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		exit(EXIT_FAILURE);
 	}
+
+	obj->rodata->port = port;
 
 	/* Load & verify BPF programs */
 	int err = xdp_dropall_bpf__load(obj);
