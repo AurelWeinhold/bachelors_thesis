@@ -6,6 +6,7 @@ This is the repository of my, Aurel Weinhold, Bachelors Thesis.
 To bootstrap the eBPF filter and user space application,
 (libbpf-bootstrap)[https://github.com/libbpf/libbpf-bootstrap.git] is used.
 
+
 ## Running
 
 To run simply run the executable with `sudo`:
@@ -21,13 +22,13 @@ Find `ifindex` by running `ip link show` and select the appropriate interface.
 
 ### Install Dependencies
 
-You will need `clang`, `libelf` and `zlib` to build, package names
-may vary across Linux distributions.
 - Linux kernel >= 5.15, but it is tested on the latest kernel distributed by
   Arch.
 - `clang`
 - `libelf`
 - `zlib`
+
+Package names may vary across Linux distributions.
 
 On Ubuntu/Debian, you need:
 ```shell
@@ -50,6 +51,7 @@ $ make
 $ sudo ./bootstrap
 <...>
 ```
+
 
 ## Troubleshooting
 
