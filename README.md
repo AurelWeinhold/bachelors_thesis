@@ -1,7 +1,10 @@
 Bachelors Thesis
 ===
 
+This is the repository of my, Aurel Weinhold, Bachelors Thesis.
 
+To bootstrap the eBPF filter and user space application,
+(libbpf-bootstrap)[https://github.com/libbpf/libbpf-bootstrap.git] is used.
 
 
 ```shell
