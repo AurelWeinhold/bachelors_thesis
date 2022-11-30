@@ -29,22 +29,21 @@ int drop_all(struct xdp_md *ctx)
 		return XDP_PASS;
 	
 	// protocol must be TCP
-	if (ipv4->protocol == IPPROTO_TCP) {
-
-		// TCP packet must not go over `data_end` edge
-		struct tcphdr *tcp = (void*)ipv4 + sizeof(*ipv4);
-		if ((void*)tcp + sizeof(*tcp) > data_end)
-			return XDP_PASS;
-
-		// drop only if packet arrived on port `port`
-		// change from network to host byte order
-		if (bpf_ntohs(tcp->dest) == port)
-			return XDP_DROP;
-
-		bpf_printk("TCP packet destination: %i", bpf_ntohs(tcp->dest));
-	}
+	if (ipv4->protocol != IPPROTO_TCP)
+		return XDP_PASS;
 
 	// TODO(Aurel): parse IPv6 packets
+	// TCP packet must not go over `data_end` edge
+	struct tcphdr *tcp = (void*)ipv4 + sizeof(*ipv4);
+	if ((void*)tcp + sizeof(*tcp) > data_end)
+		return XDP_PASS;
 
-	return XDP_PASS;
+	// change from network to host byte order
+	__u32 packet_port = bpf_ntohs(tcp->dest);
+	// destination must be `port`
+	if (packet_port != port)
+		return XDP_PASS;
+
+	bpf_printk("Dropping paket destined %lu", packet_port);
+	return XDP_DROP;
 }
