@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 /* Copyright (c) 2020 Facebook */
+#include "thesis.skel.h"
+#include <bpf/libbpf.h>
 #include <signal.h>
 #include <stdio.h>
-#include <bpf/libbpf.h>
 #include <stdlib.h>
-#include "thesis.skel.h"
 
-
-static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
+static int
+libbpf_print_fn(enum libbpf_print_level level, const char* format, va_list args)
 {
 	/*
 	 * TODO(Aurel): Figure out how to handle verbose setting.
@@ -19,14 +19,16 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
 
 static volatile bool exiting = false;
 
-static void sig_handler(int sig)
+static void
+sig_handler(int sig)
 {
 	exiting = true;
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char** argv)
 {
-	struct thesis_bpf *obj;
+	struct thesis_bpf* obj;
 
 	// Parse command line arguments
 	if (argc < 3) {
@@ -83,13 +85,13 @@ int main(int argc, char **argv)
 	 * };
 	 */
 	struct bpf_link* link =
-		bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
+			bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
 	if (!link) {
 		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 		goto cleanup;
 	}
 
-	while(1) {
+	while (1) {
 		if (exiting)
 			break;
 	};
