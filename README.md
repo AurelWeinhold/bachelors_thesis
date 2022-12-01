@@ -53,7 +53,7 @@ $ make
 
 ## Troubleshooting
 
-Libbpf debug logs are quire helpful to pinpoint the exact source of problems, so
+Libbpf debug logs are quite helpful to pinpoint the exact source of problems, so
 it's usually a good idea to look at them before starting to debug or posting
 question online.
 
@@ -72,3 +72,8 @@ libbpf: elf: section(4) license, size 13, link 0, flags 3, type=1
 libbpf: license of bootstrap_bpf is Dual BSD/GPL
 ...
 ```
+
+### Debugging
+
+To print message inside the eBPF program use `bpf_printk` and inspect the prints
+by using `$ sudo cat /sys/kernel/debug/tracing/trace_pipe`.
