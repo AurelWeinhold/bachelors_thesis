@@ -9,7 +9,7 @@
 #include "thesis.h"
 
 static int
-libbpf_print_fn(enum libbpf_print_level level, const char* format, va_list args)
+libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
 	/*
 	 * TODO(Aurel): Figure out how to handle verbose setting.
@@ -28,9 +28,9 @@ sig_handler(int sig)
 }
 
 int
-main(int argc, char** argv)
+main(int argc, char **argv)
 {
-	struct thesis_bpf* obj;
+	struct thesis_bpf *obj;
 
 	// Parse command line arguments
 	if (argc < 3) {
@@ -65,7 +65,7 @@ main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
-	struct bpf_map* state_map = NULL;
+	struct bpf_map *state_map = NULL;
 
 	/* Load & verify BPF programs */
 	int err = thesis_bpf__load(obj);
@@ -86,7 +86,7 @@ main(int argc, char** argv)
 	 * 		struct work_struct work;
 	 * };
 	 */
-	struct bpf_link* link =
+	struct bpf_link *link =
 			bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
 	if (!link) {
 		fprintf(stderr, "Failed to attach eBPF to XDP.\n");

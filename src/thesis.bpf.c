@@ -15,31 +15,31 @@ struct {
 
 SEC("xdp")
 int
-drop_all(struct xdp_md* ctx)
+drop_all(struct xdp_md *ctx)
 {
 	__u32 port = 0;
 
-	void* port_lookup = bpf_map_lookup_elem(&state, &state_keys.port);
+	void *port_lookup = bpf_map_lookup_elem(&state, &state_keys.port);
 	if (port_lookup)
-		port = *(u32*)port_lookup;
+		port = *(u32 *)port_lookup;
 
 	// invalid or no port given
 	if (port == 0)
 		return XDP_PASS;
 
 	// declare where data starts and ends
-	void* data     = (void*)(long)ctx->data;
-	void* data_end = (void*)(long)ctx->data_end;
+	void *data     = (void *)(long)ctx->data;
+	void *data_end = (void *)(long)ctx->data_end;
 
 	// parse ethernet packet
 	// ethernet packet must not go over `data_end` edge
-	struct ethhdr* eth = data;
-	if ((void*)eth + sizeof(*eth) > data_end)
+	struct ethhdr *eth = data;
+	if ((void *)eth + sizeof(*eth) > data_end)
 		return XDP_PASS;
 
 	// IPv4 packet must not be go over `data_end` edge
-	struct iphdr* ipv4 = (void*)eth + sizeof(*eth);
-	if ((void*)ipv4 + sizeof(*ipv4) > data_end)
+	struct iphdr *ipv4 = (void *)eth + sizeof(*eth);
+	if ((void *)ipv4 + sizeof(*ipv4) > data_end)
 		return XDP_PASS;
 
 	// protocol must be TCP
@@ -49,8 +49,8 @@ drop_all(struct xdp_md* ctx)
 	// TODO(Aurel): parse IPv6 packets
 
 	// TCP packet must not go over `data_end` edge
-	struct tcphdr* tcp = (void*)ipv4 + sizeof(*ipv4);
-	if ((void*)tcp + sizeof(*tcp) > data_end)
+	struct tcphdr *tcp = (void *)ipv4 + sizeof(*ipv4);
+	if ((void *)tcp + sizeof(*tcp) > data_end)
 		return XDP_PASS;
 
 	// destination must be `port` (take care of network and host byte order!)
