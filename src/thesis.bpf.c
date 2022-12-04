@@ -13,12 +13,16 @@ struct {
 	__type(value, __u32);
 } state SEC(".maps");
 
-const volatile __u32 port = 0;
-
 SEC("xdp")
 int
 drop_all(struct xdp_md* ctx)
 {
+	__u32 port = 0;
+
+	void* port_lookup = bpf_map_lookup_elem(&state, &state_keys.port);
+	if (port_lookup)
+		port = *(u32*)port_lookup;
+
 	// invalid or no port given
 	if (port == 0)
 		return XDP_PASS;

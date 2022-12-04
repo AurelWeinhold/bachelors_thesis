@@ -66,7 +66,6 @@ main(int argc, char** argv)
 	}
 
 	struct bpf_map* state_map = NULL;
-	obj->rodata->port = port;
 
 	/* Load & verify BPF programs */
 	int err = thesis_bpf__load(obj);
@@ -93,6 +92,12 @@ main(int argc, char** argv)
 		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 		goto cleanup;
 	}
+
+	// NOTE(Aurel): filter needs to be loaded to access appropriate memory
+	state_map = obj->maps.state;
+	// NOTE(Aurel): See header for state map keys:
+	bpf_map__update_elem(state_map, &state_keys.port, sizeof(state_keys.port),
+	                     &port, sizeof(__u32), 0);
 
 	while (1) {
 		if (exiting)
