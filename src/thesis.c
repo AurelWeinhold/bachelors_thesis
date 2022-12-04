@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "thesis.h"
+
 static int
 libbpf_print_fn(enum libbpf_print_level level, const char* format, va_list args)
 {
@@ -63,6 +65,7 @@ main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
+	struct bpf_map* state_map = NULL;
 	obj->rodata->port = port;
 
 	/* Load & verify BPF programs */

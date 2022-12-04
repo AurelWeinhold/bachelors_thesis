@@ -2,7 +2,16 @@
 #include <bpf/bpf_endian.h>
 #include <bpf/bpf_helpers.h>
 
+#include "thesis.h"
+
 char LICENSE[] SEC("license") = "GPL";
+
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 1);
+	__type(key, char[MAX_KEY_LEN]);
+	__type(value, __u32);
+} state SEC(".maps");
 
 const volatile __u32 port = 0;
 
