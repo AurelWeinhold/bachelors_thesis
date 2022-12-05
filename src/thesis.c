@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 /* Copyright (c) 2020 Facebook */
-#include "thesis.skel.h"
 #include <bpf/libbpf.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "thesis.h"
+
+#include "thesis.skel.h"
 
 static int
 libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
