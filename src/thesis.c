@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 /* Copyright (c) 2020 Facebook */
 #include <bpf/libbpf.h>
+#include <error.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,6 +107,22 @@ main(int argc, char **argv)
 		errno = 0; // actually errno
 		int n = 0;
 		while (!exiting) {
+			// TODO(Aurel): Ask for a new port
+			printf("New port: ");
+			n = scanf("%s", port_str); // figure out scanf
+
+			// TODO(Aurel): Error handling! Not working on <CTRL-[CD]>.
+			if (n > 0) {
+				port = atoi(port_str);
+				printf("New port set to %s:%i\n", port_str, port);
+			} else if (errno == -EINTR) {
+				err = 0;
+				break;
+			} else if (errno != 0) {
+				perror("scanf");
+			} else {
+				fprintf(stderr, "No matching characters\n");
+			}
 			if (err < 0) {
 				printf("Error scanning for user input: %d\n", err);
 				break;
