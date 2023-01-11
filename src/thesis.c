@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "thesis.h"
 
@@ -87,27 +88,38 @@ main(int argc, char **argv)
 	 * 		struct work_struct work;
 	 * };
 	 */
-	struct bpf_link *link =
-			bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
-	if (!link) {
-		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
-		goto cleanup;
+	int pid;
+	if ((pid = fork()) == 0) {
+		// child
+		struct bpf_link *link =
+				bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
+		if (!link) {
+			fprintf(stderr, "Failed to attach eBPF to XDP.\n");
+			goto cleanup;
+		}
+		// NOTE(Aurel): filter needs to be loaded to access appropriate memory
+		state_map = obj->maps.state;
+		// NOTE(Aurel): See header for state map keys:
+		bpf_map__update_elem(state_map, &state_keys.port,
+		                     sizeof(state_keys.port), &port, sizeof(__u32), 0);
+
+		char port_str[5];
+		errno = 0; // actually errno
+		int n = 0;
+		while (!exiting) {
+			if (err < 0) {
+				printf("Error scanning for user input: %d\n", err);
+				break;
+			}
+		};
+
+	cleanup:
+		/* Clean up */
+		thesis_bpf__destroy(obj);
+
+		return err < 0 ? -err : 0;
+
+	} else {
+		// parent
 	}
-
-	// NOTE(Aurel): filter needs to be loaded to access appropriate memory
-	state_map = obj->maps.state;
-	// NOTE(Aurel): See header for state map keys:
-	bpf_map__update_elem(state_map, &state_keys.port, sizeof(state_keys.port),
-	                     &port, sizeof(__u32), 0);
-
-	while (1) {
-		if (exiting)
-			break;
-	};
-
-cleanup:
-	/* Clean up */
-	thesis_bpf__destroy(obj);
-
-	return err < 0 ? -err : 0;
 }
