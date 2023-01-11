@@ -23,9 +23,12 @@ drop_all(struct xdp_md *ctx)
 	if (port_lookup)
 		port = *(u32 *)port_lookup;
 
-	// invalid or no port given
-	if (port == 0)
+	// invalid or no port given yet
+	if (port == 0) {
+		bpf_printk("Invalid or no port given");
 		return XDP_PASS;
+	}
+	bpf_printk("Port: %i", port);
 
 	// declare where data starts and ends
 	void *data     = (void *)(long)ctx->data;
