@@ -29,7 +29,7 @@
 
 struct state {
 	char port[PORT_LEN + 1];
-	int state;
+	uint32_t state;
 };
 
 static int
@@ -76,6 +76,30 @@ receive(int socket_fd)
 		nr_bytes_recv += cur_recv;
 		wr_ptr += cur_recv;
 	}
+}
+
+int
+send_state(int socket_fd, uint32_t state)
+{
+	int size = 4;
+
+	// TODO(Aurel): Marshaling? Might not be needed as this is not part of IP-protocol
+	//state = htonl(state);
+	char buf[size + 1];
+	snprintf(buf, size + 1, "%d", state);
+	printf("%s\n", buf);
+
+	// loop while not all `size` bytes have been sent
+	long nsent = 0;
+	while (nsent != size) {
+		int bytes;
+		if ((bytes = send(socket_fd, buf + nsent, size - nsent, 0)) < -1) {
+			perror("send");
+			return 1;
+		}
+		nsent += bytes;
+	}
+	return 0;
 }
 
 int
@@ -323,8 +347,8 @@ main(int argc, char **argv)
 						}
 					} else {
 						// already established connection is sending data
-						// TODO(Aurel): answer with `share_state->state`
 						receive(fd);
+						send_state(fd, shared_state->state);
 						close(fd);
 						FD_CLR(fd, &primary_fds);
 						read = 1;
