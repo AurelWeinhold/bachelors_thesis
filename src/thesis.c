@@ -269,6 +269,7 @@ main(int argc, char **argv)
 			}
 
 			// check each fd for data to read
+			int read = 0;
 			for (int fd = 0; fd <= fd_max; fd++) {
 				if (FD_ISSET(fd, &read_fds)) {
 					// connection found
@@ -294,9 +295,12 @@ main(int argc, char **argv)
 					} else {
 						// already established connection is sending data
 						// TODO(Aurel): answer with `share_state->state`
+						read = 1;
 					}
 				}
 			}
+			if (read)
+				break;
 		}
 
 		close(sockfd);
