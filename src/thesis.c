@@ -12,6 +12,13 @@
 #include <bpf/libbpf.h>
 #include <signal.h>
 
+// userspace server
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "thesis.h"
 #include "thesis.skel.h"
 
@@ -39,6 +46,64 @@ static void
 sig_handler(int sig)
 {
 	exiting = true;
+}
+
+int
+init_socket(int *sockfd, char *port)
+{
+	struct addrinfo hints, *server_info, *p;
+
+	// hints needs to be filled with all 0 except for ai_family, ai_socktype
+	// and ai_flags in order to be automatically filled by getaddrinfo()
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family   = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags    = AI_PASSIVE;
+
+	int rv;
+	if ((rv = getaddrinfo(NULL, port, &hints, &server_info)) != 0) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+		return -1;
+	}
+
+	// loop through all the results and bind to the first possible
+	int status = 0;
+	for (p = server_info; p != NULL; p = p->ai_next) {
+		// trying to get a socket
+		if ((*sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) ==
+		    -1) {
+			perror("server: socket");
+			continue;
+		}
+		// SO_REUSEADDR: Port may be reused after program stops running
+		int optval = 1;
+		setsockopt(*sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
+
+		// trying to bind to that socket
+		if ((status = bind(*sockfd, p->ai_addr, p->ai_addrlen)) == -1) {
+			close(*sockfd);
+			perror("server: bind");
+			continue;
+		}
+		// socket bound
+		break;
+	}
+	freeaddrinfo(server_info);
+	if (p == NULL) {
+		fprintf(stderr, "server: failed to connect to socket.\n");
+		return -1;
+	}
+	if (status == -1) {
+		fprintf(stderr, "server: failed to bind to socket.\n");
+		return -1;
+	}
+
+	// preparing for incoming connections
+	if (listen(*sockfd, 1) == -1) {
+		perror("listen");
+		return -1;
+	}
+	return 0;
 }
 
 static struct state *shared_state;
