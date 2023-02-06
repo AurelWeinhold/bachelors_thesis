@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 // eBPF
 #include <bpf/libbpf.h>
@@ -416,6 +417,7 @@ main(int argc, char **argv)
 		// parent: userspace
 		userspace(port_str);
 #ifndef DEBUG_USERSPACE_ONLY
+		wait(NULL);
 	}
 #endif
 }
