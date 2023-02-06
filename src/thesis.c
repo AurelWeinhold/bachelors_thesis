@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 /* Copyright (c) 2020 Facebook */
-#include <bpf/libbpf.h>
-#include <signal.h>
+
+// shared
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "thesis.h"
+// eBPF
+#include <bpf/libbpf.h>
+#include <signal.h>
 
+#include "thesis.h"
 #include "thesis.skel.h"
 
 #define PORT_LEN 5
