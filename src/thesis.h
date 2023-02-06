@@ -4,10 +4,12 @@
 #define MAX_KEY_LEN 5
 struct state_keys {
 	char port[MAX_KEY_LEN];
+	char state[MAX_KEY_LEN];
 };
 
 const struct state_keys state_keys = {
 	.port = "port",
+	.state = "state",
 };
 
 #define THESIS_H

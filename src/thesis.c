@@ -4,11 +4,20 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 #include "thesis.h"
 
 #include "thesis.skel.h"
+
+#define PORT_LEN 5
+
+struct state {
+	char port[PORT_LEN + 1];
+	int state;
+};
 
 static int
 libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
@@ -28,6 +37,8 @@ sig_handler(int sig)
 {
 	exiting = true;
 }
+
+static struct state *shared_state;
 
 int
 main(int argc, char **argv)
@@ -67,6 +78,19 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	// Shared memory for accessing the state in both threads
+	// TODO(Aurel): What does MAP_ANONYMOUS mean?
+	shared_state = mmap(NULL, sizeof(*shared_state), PROT_READ | PROT_WRITE,
+	                    MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	if (shared_state == MAP_FAILED) {
+		fprintf(stderr, "Failed to create shared memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	strncpy(shared_state->port, port_str, PORT_LEN);
+	shared_state->port[PORT_LEN] = '\0';
+	shared_state->state          = 0;
+
 	int pid;
 	if ((pid = fork()) == 0) {
 		// child: eBPF
@@ -102,7 +126,11 @@ main(int argc, char **argv)
 		state_map = obj->maps.state;
 		// NOTE(Aurel): See header for state map keys:
 		bpf_map__update_elem(state_map, &state_keys.port,
-		                     sizeof(state_keys.port), &port, sizeof(__u32), 0);
+		                     sizeof(state_keys.port), &shared_state->port,
+		                     sizeof(__u32), 0);
+		bpf_map__update_elem(state_map, &state_keys.state,
+		                     sizeof(state_keys.state), &shared_state->state,
+		                     sizeof(__u32), 0);
 
 		char port_str[5];
 		errno = 0; // actually errno
