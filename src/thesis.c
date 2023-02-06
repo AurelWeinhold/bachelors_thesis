@@ -2,6 +2,7 @@
 /* Copyright (c) 2020 Facebook */
 
 // shared
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +24,7 @@
 #include "thesis.skel.h"
 
 #define MAX_CONNECTIONS 10
+#define BUF_SIZE 2
 #define PORT_LEN 5
 
 struct state {
@@ -47,6 +49,33 @@ static void
 sig_handler(int sig)
 {
 	exiting = true;
+}
+
+/*
+ * TODO(Aurel): Currently this does nothing other than receiving, as the result
+ * is not needed. The buffer into which the received data is put is just being
+ * discarded.
+ */
+void
+receive(int socket_fd)
+{
+	uint8_t buf[BUF_SIZE];
+	size_t nr_bytes_recv = 0;
+	uint8_t *wr_ptr      = buf;
+	int cur_recv;
+	while (nr_bytes_recv < BUF_SIZE) {
+		//         recv(socket_fd, buf,    remaining buf_size,       flags)
+		cur_recv = recv(socket_fd, wr_ptr, BUF_SIZE - nr_bytes_recv, 0);
+		if (cur_recv < 0) {
+			perror("recv");
+			return;
+		}
+		if (cur_recv == 0)
+			// All data received
+			return;
+		nr_bytes_recv += cur_recv;
+		wr_ptr += cur_recv;
+	}
 }
 
 int
@@ -295,6 +324,9 @@ main(int argc, char **argv)
 					} else {
 						// already established connection is sending data
 						// TODO(Aurel): answer with `share_state->state`
+						receive(fd);
+						close(fd);
+						FD_CLR(fd, &primary_fds);
 						read = 1;
 					}
 				}
