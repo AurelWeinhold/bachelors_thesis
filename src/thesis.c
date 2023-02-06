@@ -67,30 +67,31 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	struct bpf_map *state_map = NULL;
-
-	/* Load & verify BPF programs */
-	int err = thesis_bpf__load(obj);
-	if (err) {
-		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
-		goto cleanup;
-	}
-
-	/* Attach to XDP stage */
-	// struct bpf_link bpf_program__attach_xdp(const struct bpf_program, int ifindex)
-	/*
-	 * struct bpf_link {
-	 *		atomic64_t refcnt;
-	 * 		u32 id;
-	 * 		enum bpf_link_type type;
-	 * 		const struct bpf_link_ops *ops;
-	 * 		struct bpf_prog *prog;
-	 * 		struct work_struct work;
-	 * };
-	 */
 	int pid;
 	if ((pid = fork()) == 0) {
-		// child
+		// child: eBPF
+
+		struct bpf_map *state_map = NULL;
+
+		/* Load & verify BPF programs */
+		int err = thesis_bpf__load(obj);
+		if (err) {
+			fprintf(stderr, "Failed to load and verify BPF skeleton\n");
+			goto cleanup;
+		}
+
+		/* Attach to XDP stage */
+		// struct bpf_link bpf_program__attach_xdp(const struct bpf_program, int ifindex)
+		/*
+		 * struct bpf_link {
+		 *		atomic64_t refcnt;
+		 * 		u32 id;
+		 * 		enum bpf_link_type type;
+		 * 		const struct bpf_link_ops *ops;
+		 * 		struct bpf_prog *prog;
+		 * 		struct work_struct work;
+		 * };
+		 */
 		struct bpf_link *link =
 				bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
 		if (!link) {
@@ -120,6 +121,7 @@ main(int argc, char **argv)
 		return err < 0 ? -err : 0;
 
 	} else {
-		// parent
+		// parent: userspace
+		// fallback port: port
 	}
 }
