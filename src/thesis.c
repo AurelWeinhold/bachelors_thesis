@@ -84,8 +84,6 @@ send_state(int socket_fd, uint32_t state)
 {
 	int size = 4;
 
-	// TODO(Aurel): Marshaling? Might not be needed as this is not part of IP-protocol
-	//state = htonl(state);
 	char buf[size + 1];
 	snprintf(buf, size + 1, "%d", state);
 	printf("%s\n", buf);
