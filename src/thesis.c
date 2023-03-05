@@ -55,6 +55,13 @@ sig_handler(int sig)
 	exiting = true;
 }
 
+void
+print_prot(struct prot prot)
+{
+	printf("op: %d\n", prot.op);
+	printf("value: %d\n", prot.value);
+}
+
 /**
  * Receives data on the given `socket_fd` and parses it into the given `packet`.
  *
