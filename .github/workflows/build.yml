@@ -1,4 +1,4 @@
-name: libbpf-bootstrap build
+name: thesis server build
 
 on:
   push:
@@ -24,17 +24,10 @@ jobs:
         build-args: LLVM_VERSION=${{ matrix.llvm }}
         file: ./.github/docker/Dockerfile.ubuntu
         tags: build_container
-    - name: Build examples/c
+    - name: Build server
       run: |
         docker run \
-          -v $(pwd):/libbpf-bootstrap \
+          -v $(pwd):/thesis \
           build_container \
           /bin/bash -c \
-          'cd /libbpf-bootstrap/examples/c && make'
-    - name: Build examples/rust
-      run: |
-        docker run \
-          -v $(pwd):/libbpf-bootstrap \
-          build_container \
-          /bin/bash -c \
-          'cd /libbpf-bootstrap/examples/rust && cargo build'
+          'mkdir /thesis/build && cd /thesis/build && cmake ../src/ && make'
