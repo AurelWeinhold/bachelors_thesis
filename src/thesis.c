@@ -246,7 +246,7 @@ userspace(char *port_str)
 					int new_fd;
 					socklen = sizeof remoteaddr;
 					new_fd  = accept(sockfd, (struct sockaddr *)&remoteaddr,
-							&socklen);
+					                 &socklen);
 					if (new_fd == -1) {
 						perror("accept");
 					} else {
@@ -256,8 +256,7 @@ userspace(char *port_str)
 							// update max fd
 							fd_max = new_fd;
 						}
-						printf("New connection established @ fd-%d.\n",
-								new_fd);
+						printf("New connection established @ fd-%d.\n", new_fd);
 					}
 				} else {
 					// already established connection is sending data
@@ -273,7 +272,7 @@ userspace(char *port_str)
 						// TODO(Aurel): Implement writing the state.
 						shared_state->state = packet.value;
 						break;
-					default: ;
+					default:;
 					}
 
 					close(fd);
@@ -372,7 +371,7 @@ main(int argc, char **argv)
 		 * };
 		 */
 		struct bpf_link *link =
-			bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
+				bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
 		if (!link) {
 			fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 			goto cleanup;
@@ -381,11 +380,11 @@ main(int argc, char **argv)
 		state_map = obj->maps.state;
 		// NOTE(Aurel): See header for state map keys:
 		bpf_map__update_elem(state_map, &state_keys.port,
-				sizeof(state_keys.port), &shared_state->port,
-				sizeof(__u32), 0);
+		                     sizeof(state_keys.port), &shared_state->port,
+		                     sizeof(__u32), 0);
 		bpf_map__update_elem(state_map, &state_keys.state,
-				sizeof(state_keys.state), &shared_state->state,
-				sizeof(__u32), 0);
+		                     sizeof(state_keys.state), &shared_state->state,
+		                     sizeof(__u32), 0);
 
 		errno = 0; // actually errno
 		int n = 0;
@@ -398,7 +397,7 @@ main(int argc, char **argv)
 			}
 		};
 		*/
-cleanup:
+	cleanup:
 		/* Clean up */
 		thesis_bpf__destroy(obj);
 		return err < 0 ? -err : 0;

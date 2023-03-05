@@ -7,8 +7,9 @@ struct state_keys {
 	char state[MAX_KEY_LEN];
 };
 
+// keys for the state map between userspace and eBPF application
 const struct state_keys state_keys = {
-	.port = "port",
+	.port  = "port",
 	.state = "state",
 };
 
