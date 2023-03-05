@@ -26,7 +26,8 @@
 //#define DEBUG_USERSPACE_ONLY
 
 #define MAX_CONNECTIONS 10
-#define BUF_SIZE 2
+// TODO(Aurel): Make BUF_SIZE == PROT_PACKET_SIZE
+#define BUF_SIZE 256
 #define PORT_LEN 5
 
 struct state {
