@@ -55,31 +55,48 @@ sig_handler(int sig)
 	exiting = true;
 }
 
-/*
- * TODO(Aurel): Currently this does nothing other than receiving, as the result
- * is not needed. The buffer into which the received data is put is just being
- * discarded.
+/**
+ * Receives data on the given `socket_fd` and parses it into the given `packet`.
+ *
+ * @param int socket_fd The socket file descriptor to receive data on.
+ * @param struct prot *packet The packet struct to parse the received data into.
+ *
+ * @return -1 if something failed or an invalid packet was sent.
+ * @return 0 for success. `prot` has then been overwritten with the newly
+ *			 received data.
  */
-void
-receive(int socket_fd)
+int
+receive_prot_packet(int socket_fd, struct prot *packet)
 {
+	printf("receiving\n");
 	uint8_t buf[BUF_SIZE];
 	size_t nr_bytes_recv = 0;
 	uint8_t *wr_ptr      = buf;
 	int cur_recv;
-	while (nr_bytes_recv < BUF_SIZE) {
+	while (nr_bytes_recv < PROT_PACKET_SIZE) {
 		//         recv(socket_fd, buf,    remaining buf_size,       flags)
 		cur_recv = recv(socket_fd, wr_ptr, BUF_SIZE - nr_bytes_recv, 0);
 		if (cur_recv < 0) {
 			perror("recv");
-			return;
+			return -1;
 		}
 		if (cur_recv == 0)
 			// All data received
-			return;
+			return -1;
 		nr_bytes_recv += cur_recv;
 		wr_ptr += cur_recv;
 	}
+
+	if (nr_bytes_recv != PROT_PACKET_SIZE) {
+		printf("error receiving: received %zu bytes\n", nr_bytes_recv);
+		return -1;
+	}
+
+	// parse packet
+	packet->op = buf[PROT_OP_OFFSET];
+	memcpy(&packet->value, buf + PROT_VALUE_OFFSET, sizeof(packet->value));
+
+	return 0;
 }
 
 int
