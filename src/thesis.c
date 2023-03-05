@@ -271,6 +271,7 @@ userspace(char *port_str)
 					case PROT_OP_WRITE:
 						// TODO(Aurel): Implement writing the state.
 						shared_state->state = packet.value;
+						send_state(fd, shared_state->state);
 						break;
 					default:;
 					}
