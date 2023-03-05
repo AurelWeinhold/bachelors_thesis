@@ -23,6 +23,8 @@
 #include "thesis.h"
 #include "thesis.skel.h"
 
+//#define DEBUG_USERSPACE_ONLY
+
 #define MAX_CONNECTIONS 10
 #define BUF_SIZE 2
 #define PORT_LEN 5
@@ -274,6 +276,7 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+#ifndef DEBUG_USERSPACE_ONLY
 	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
@@ -288,6 +291,7 @@ main(int argc, char **argv)
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	// Shared memory for accessing the state in both threads
 	// TODO(Aurel): What does MAP_ANONYMOUS mean?
@@ -302,6 +306,7 @@ main(int argc, char **argv)
 	shared_state->port[PORT_LEN] = '\0';
 	shared_state->state          = 3012;
 
+#ifndef DEBUG_USERSPACE_ONLY
 	int pid;
 	if ((pid = fork()) == 0) {
 		// child: eBPF
@@ -359,7 +364,10 @@ cleanup:
 		return err < 0 ? -err : 0;
 
 	} else {
+#endif
 		// parent: userspace
 		userspace(port_str);
+#ifndef DEBUG_USERSPACE_ONLY
 	}
+#endif
 }
