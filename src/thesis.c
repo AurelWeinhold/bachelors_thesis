@@ -261,16 +261,31 @@ userspace(char *port_str)
 					}
 				} else {
 					// already established connection is sending data
-					receive(fd);
-					send_state(fd, shared_state->state);
+					struct prot packet;
+					receive_prot_packet(fd, &packet);
+					print_prot(packet);
+
+					switch (packet.op) {
+					case PROT_OP_READ:
+						send_state(fd, shared_state->state);
+						break;
+					case PROT_OP_WRITE:
+						// TODO(Aurel): Implement writing the state.
+						shared_state->state = packet.value;
+						break;
+					default: ;
+					}
+
 					close(fd);
 					FD_CLR(fd, &primary_fds);
 					read = 1;
 				}
 			}
 		}
+		/* TODO(Aurel): When to break out of loop?
 		if (read)
 			break;
+		*/
 	}
 
 	close(sockfd);
