@@ -37,7 +37,6 @@ RUN apt-get update && apt-get install -y \
       llvm-${LLVM_VERSION}-runtime \
       libllvm${LLVM_VERSION} \
       make pkg-config \
-      rustc cargo rustfmt \
       sudo \
       && apt-get -y clean
 
