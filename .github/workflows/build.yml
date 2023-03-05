@@ -30,4 +30,4 @@ jobs:
           -v $(pwd):/thesis \
           build_container \
           /bin/bash -c \
-          'mkdir /thesis/build && cd /thesis/build && cmake ../src/ && make'
+          'mkdir /thesis/build && cd /thesis/build && CXX=/usr/bin/clang cmake ../src/ && make'
