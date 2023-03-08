@@ -136,7 +136,7 @@ send_state(int socket_fd)
 }
 
 int
-init_socket(int *sockfd, char *port)
+init_socket(int *socket_fd, char *port)
 {
 	struct addrinfo hints, *server_info, *p;
 
@@ -157,18 +157,18 @@ init_socket(int *sockfd, char *port)
 	int status = 0;
 	for (p = server_info; p != NULL; p = p->ai_next) {
 		// trying to get a socket
-		if ((*sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) ==
+		if ((*socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) ==
 		    -1) {
 			perror("server: socket");
 			continue;
 		}
 		// SO_REUSEADDR: Port may be reused after program stops running
 		int optval = 1;
-		setsockopt(*sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
+		setsockopt(*socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int));
 
 		// trying to bind to that socket
-		if ((status = bind(*sockfd, p->ai_addr, p->ai_addrlen)) == -1) {
-			close(*sockfd);
+		if ((status = bind(*socket_fd, p->ai_addr, p->ai_addrlen)) == -1) {
+			close(*socket_fd);
 			perror("server: bind");
 			continue;
 		}
@@ -186,7 +186,7 @@ init_socket(int *sockfd, char *port)
 	}
 
 	// preparing for incoming connections
-	if (listen(*sockfd, 1) == -1) {
+	if (listen(*socket_fd, 1) == -1) {
 		perror("listen");
 		return -1;
 	}
@@ -267,17 +267,18 @@ userspace(char *port_str)
 					}
 				} else {
 					// already established connection is sending data
-					struct prot packet;
-					receive_prot_packet(fd, &packet);
-					print_prot(packet);
+					struct prot request;
+					receive_prot_packet(fd, &request);
+					print_prot(request);
 
-					switch (packet.op) {
+					switch (request.op) {
 					case PROT_OP_READ:
 						send_state(fd);
 						break;
 					case PROT_OP_WRITE:
 						// TODO(Aurel): Implement writing the state.
-						shared_state->state = packet.value;
+						shared_state->state = request.value;
+						printf("Updated state: %d\n", shared_state->state);
 						send_state(fd);
 						break;
 					default:;
