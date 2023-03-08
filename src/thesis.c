@@ -121,7 +121,7 @@ send_state(int socket_fd, uint32_t state)
 		int bytes;
 		if ((bytes = send(socket_fd, buf + nsent, size - nsent, 0)) < -1) {
 			perror("send");
-			return 1;
+			return -1;
 		}
 		nsent += bytes;
 	}
