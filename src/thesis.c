@@ -107,13 +107,13 @@ receive_prot_packet(int socket_fd, struct prot *packet)
 }
 
 int
-send_state(int socket_fd, uint32_t state)
+send_prot(int socket_fd, struct prot prot)
 {
-	int size = 4;
+	int size = sizeof(prot);
 
 	char buf[size + 1];
-	snprintf(buf, size + 1, "%d", state);
-	printf("%s\n", buf);
+	memcpy(buf + PROT_OP_OFFSET, &prot.op, 4);
+	memcpy(buf + PROT_VALUE_OFFSET, &prot.value, 4);
 
 	// loop while not all `size` bytes have been sent
 	long nsent = 0;
@@ -126,6 +126,13 @@ send_state(int socket_fd, uint32_t state)
 		nsent += bytes;
 	}
 	return 0;
+}
+
+int
+send_state(int socket_fd)
+{
+	struct prot reply = { .op = PROT_OP_READ, .value = shared_state->state };
+	return send_prot(socket_fd, reply);
 }
 
 int
@@ -266,12 +273,12 @@ userspace(char *port_str)
 
 					switch (packet.op) {
 					case PROT_OP_READ:
-						send_state(fd, shared_state->state);
+						send_state(fd);
 						break;
 					case PROT_OP_WRITE:
 						// TODO(Aurel): Implement writing the state.
 						shared_state->state = packet.value;
-						send_state(fd, shared_state->state);
+						send_state(fd);
 						break;
 					default:;
 					}
