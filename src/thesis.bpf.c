@@ -71,6 +71,17 @@ drop_all(struct xdp_md *ctx)
 
 	struct prot *request = (struct prot *)data_base;
 
+	// only handle read requests
+	if (request->op != PROT_OP_READ)
+		return XDP_PASS;
+
+	// get the state
+	int *state_lookup = bpf_map_lookup_elem(&state, &state_keys.state);
+	if (!state_lookup)
+		return XDP_PASS;
+	// set the current state in the value field
+	request->value = *state_lookup;
+
 	// reverse source and destination ip
 	__u32 dest_ip = ipv4->daddr;
 	ipv4->daddr   = ipv4->saddr;
@@ -81,7 +92,7 @@ drop_all(struct xdp_md *ctx)
 	tcp->dest       = tcp->source;
 	tcp->source     = dest_port;
 
-	bpf_printk("Rerouting packet to %lu:%lu", ipv4->daddr,
+	bpf_printk("Read value.\nRerouting packet to %lu:%lu", ipv4->daddr,
 	           bpf_ntohs(tcp->dest));
 
 	return XDP_TX;
