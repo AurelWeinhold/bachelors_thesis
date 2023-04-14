@@ -58,6 +58,19 @@ drop_all(struct xdp_md *ctx)
 	if (bpf_ntohs(tcp->dest) != port)
 		return XDP_PASS;
 
+	void *base = (void*)tcp + sizeof(*tcp);
+	/*
+	 * TODO(Aurel): Is there another header in the `data_offset`? This value
+	 * comes from checking some sample data packets. It needs more testing or an
+	 * actual protocol.
+	 */
+	int data_offset = 12;
+	char *data_base = base + data_offset;
+	if ((void*)(data_base + PROT_PACKET_SIZE) > data_end)
+		return XDP_PASS;
+
+	struct prot *request = (struct prot *)data_base;
+
 	// reverse source and destination ip
 	__u32 dest_ip = ipv4->daddr;
 	ipv4->daddr   = ipv4->saddr;
@@ -67,25 +80,6 @@ drop_all(struct xdp_md *ctx)
 	__u32 dest_port = tcp->dest;
 	tcp->dest       = tcp->source;
 	tcp->source     = dest_port;
-
-	void *base = (void*)tcp + sizeof(*tcp);
-	/*
-	 * TODO(Aurel): Is there another header in the `data_offset`? This value
-	 * comes from checking some sample data packets. It needs more testing or an
-	 * actual protocol.
-	 */
-	int data_offset = 12;
-	char *data_base = base + data_offset;
-	int data_size = 5;
-	if ((void*)(data_base + data_size) <= data_end) {
-#pragma unroll
-		// TODO(Aurel): data_size -1 because of the newline char sent with nc
-		for (uint64_t i = 0; i < data_size -1; ++i) {
-			char c = *(((char *)data_base) + i);
-			// TODO(Aurel): Actually put data into the packet.
-			data_base[i] = c + 1;
-		}
-	}
 
 	bpf_printk("Rerouting packet to %lu:%lu", ipv4->daddr,
 	           bpf_ntohs(tcp->dest));
