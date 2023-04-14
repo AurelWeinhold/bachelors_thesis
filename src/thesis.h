@@ -13,10 +13,16 @@ const struct state_keys state_keys = {
 	.state = "state",
 };
 
+/*
+ * TODO(Aurel): Maybe don't stop adding padding. This is done so the network
+ * packet (at an offset) can be casted to `struct prot`.
+ */
+#pragma pack(push, 1)
 struct prot {
 	int op;
 	int value;
 };
+#pragma pack(pop)
 
 /**
  * Protocol offsets
