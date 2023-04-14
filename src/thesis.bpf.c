@@ -59,11 +59,8 @@ drop_all(struct xdp_md *ctx)
 		return XDP_PASS;
 
 	void *base = (void*)tcp + sizeof(*tcp);
-	/*
-	 * TODO(Aurel): Is there another header in the `data_offset`? This value
-	 * comes from checking some sample data packets. It needs more testing or an
-	 * actual protocol.
-	 */
+
+	// TODO(Aurel): What is in the `data_offset`s bytes? Another header?
 	int data_offset = 12;
 	char *data_base = base + data_offset;
 	if ((void*)(data_base + PROT_PACKET_SIZE) > data_end)
@@ -79,6 +76,12 @@ drop_all(struct xdp_md *ctx)
 	int *state_lookup = bpf_map_lookup_elem(&state, &state_keys.state);
 	if (!state_lookup)
 		return XDP_PASS;
+	
+	/*
+	 * **Only change packet after here!**
+	 * All checks and the lookup were successful.
+	 */
+
 	// set the current state in the value field
 	request->value = *state_lookup;
 
