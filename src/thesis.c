@@ -25,6 +25,7 @@
 #include "thesis.skel.h"
 
 //#define DEBUG_USERSPACE_ONLY
+//#define DEBUG_EBPF_ONLY
 
 #define MAX_CONNECTIONS 10
 // TODO(Aurel): Make BUF_SIZE == PROT_PACKET_SIZE
@@ -293,7 +294,9 @@ userspace(char *port_str)
 					}
 				} else {
 					// already established connection is sending data
+#ifndef DEBUG_EBPF_ONLY
 					read = handle_request(fd, &primary_fds);
+#endif
 				}
 			}
 		}
