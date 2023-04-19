@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 // eBPF
 #include <bpf/libbpf.h>
@@ -184,8 +184,8 @@ init_socket(int *socket_fd, char *port)
 	int status = 0;
 	for (p = server_info; p != NULL; p = p->ai_next) {
 		// trying to get a socket
-		if ((*socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) ==
-		    -1) {
+		if ((*socket_fd = socket(p->ai_family, p->ai_socktype,
+		                         p->ai_protocol)) == -1) {
 			perror("server: socket");
 			continue;
 		}
@@ -394,7 +394,8 @@ main(int argc, char **argv)
 		}
 		// NOTE(Aurel): filter needs to be loaded to access appropriate memory
 		state_map = obj->maps.state;
-		// NOTE(Aurel): See header for state map keys:
+
+		// NOTE(Aurel): See header for state map keys
 		// pass port to eBPF program
 		err = bpf_map__update_elem(state_map, &state_keys.port,
 		                           sizeof(state_keys.port), &port,
@@ -415,11 +416,10 @@ main(int argc, char **argv)
 			goto cleanup;
 		}
 
-		errno = 0; // actually errno
 		int n = 0;
 		while (!exiting) {
 			if (err < 0) {
-				printf("Error scanning for user input: %d\n", err);
+				//printf("Error scanning for user input: %d\n", err);
 				break;
 			}
 		};
