@@ -392,6 +392,8 @@ main(int argc, char **argv)
 			fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 			goto cleanup;
 		}
+		fprintf(stderr, "Attached eBPF to XDP stage...\n");
+
 		// NOTE(Aurel): filter needs to be loaded to access appropriate memory
 		state_map = obj->maps.state;
 
@@ -426,6 +428,8 @@ main(int argc, char **argv)
 	cleanup:
 		/* Clean up */
 		thesis_bpf__destroy(obj);
+		fprintf(stderr, "Detached eBPF program.\n");
+		fprintf(stderr, "Resuming to user space only.\n");
 		return err < 0 ? -err : 0;
 
 	} else {
