@@ -137,6 +137,31 @@ send_state(int socket_fd)
 }
 
 int
+handle_request(int fd, fd_set *primary_fds)
+{
+	struct prot request;
+	receive_prot_packet(fd, &request);
+	print_prot(request);
+
+	switch (request.op) {
+	case PROT_OP_READ:
+		send_state(fd);
+		break;
+	case PROT_OP_WRITE:
+		// TODO(Aurel): Implement writing the state.
+		shared_state->state = request.value;
+		printf("Updated state: %d\n", shared_state->state);
+		send_state(fd);
+		break;
+	default:;
+	}
+
+	close(fd);
+	FD_CLR(fd, primary_fds);
+	return 1;
+}
+
+int
 init_socket(int *socket_fd, char *port)
 {
 	struct addrinfo hints, *server_info, *p;
@@ -268,26 +293,7 @@ userspace(char *port_str)
 					}
 				} else {
 					// already established connection is sending data
-					struct prot request;
-					receive_prot_packet(fd, &request);
-					print_prot(request);
-
-					switch (request.op) {
-					case PROT_OP_READ:
-						send_state(fd);
-						break;
-					case PROT_OP_WRITE:
-						// TODO(Aurel): Implement writing the state.
-						shared_state->state = request.value;
-						printf("Updated state: %d\n", shared_state->state);
-						send_state(fd);
-						break;
-					default:;
-					}
-
-					close(fd);
-					FD_CLR(fd, &primary_fds);
-					read = 1;
+					read = handle_request(fd, &primary_fds);
 				}
 			}
 		}
