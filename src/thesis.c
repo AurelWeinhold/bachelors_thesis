@@ -403,15 +403,12 @@ main(int argc, char **argv)
 
 		errno = 0; // actually errno
 		int n = 0;
-		wait(NULL);
-		/*
 		while (!exiting) {
 			if (err < 0) {
 				printf("Error scanning for user input: %d\n", err);
 				break;
 			}
 		};
-		*/
 	cleanup:
 		/* Clean up */
 		thesis_bpf__destroy(obj);
