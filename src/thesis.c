@@ -2,6 +2,7 @@
 /* Copyright (c) 2020 Facebook */
 
 // shared
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -394,12 +395,25 @@ main(int argc, char **argv)
 		// NOTE(Aurel): filter needs to be loaded to access appropriate memory
 		state_map = obj->maps.state;
 		// NOTE(Aurel): See header for state map keys:
+		// pass port to eBPF program
 		err = bpf_map__update_elem(state_map, &state_keys.port,
 		                           sizeof(state_keys.port), &port,
 		                           sizeof(__u32), 0);
-		bpf_map__update_elem(state_map, &state_keys.state,
-		                     sizeof(state_keys.state), &shared_state->state,
-		                     sizeof(__u32), 0);
+		if (err) {
+			fprintf(stderr, "Failed updating map writing port. errno %s\n",
+			        strerror(errno));
+			goto cleanup;
+		}
+
+		// pass state to eBPF program
+		err = bpf_map__update_elem(state_map, &state_keys.state,
+		                           sizeof(state_keys.state),
+		                           &shared_state->state, sizeof(__u32), 0);
+		if (err) {
+			fprintf(stderr, "Failed updating map writing state. errno %s\n",
+			        strerror(errno));
+			goto cleanup;
+		}
 
 		errno = 0; // actually errno
 		int n = 0;
