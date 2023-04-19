@@ -33,7 +33,6 @@
 #define PORT_LEN 5
 
 struct state {
-	char port[PORT_LEN + 1];
 	uint32_t state;
 };
 
@@ -359,10 +358,7 @@ main(int argc, char **argv)
 		fprintf(stderr, "Failed to create shared memory\n");
 		exit(EXIT_FAILURE);
 	}
-
-	strncpy(shared_state->port, port_str, PORT_LEN);
-	shared_state->port[PORT_LEN] = '\0';
-	shared_state->state          = 3012;
+	shared_state->state = 3012;
 
 #ifndef DEBUG_USERSPACE_ONLY
 	int pid;
@@ -398,9 +394,9 @@ main(int argc, char **argv)
 		// NOTE(Aurel): filter needs to be loaded to access appropriate memory
 		state_map = obj->maps.state;
 		// NOTE(Aurel): See header for state map keys:
-		bpf_map__update_elem(state_map, &state_keys.port,
-		                     sizeof(state_keys.port), &shared_state->port,
-		                     sizeof(__u32), 0);
+		err = bpf_map__update_elem(state_map, &state_keys.port,
+		                           sizeof(state_keys.port), &port,
+		                           sizeof(__u32), 0);
 		bpf_map__update_elem(state_map, &state_keys.state,
 		                     sizeof(state_keys.state), &shared_state->state,
 		                     sizeof(__u32), 0);
