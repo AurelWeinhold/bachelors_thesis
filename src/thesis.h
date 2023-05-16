@@ -47,6 +47,7 @@ enum protocol_op {
 	PROT_OP_NOOP  = 0,
 	PROT_OP_READ  = 1,
 	PROT_OP_WRITE = 2,
+	PROT_OP_REPLY = 3,
 };
 
 #define THESIS_H

@@ -151,6 +151,7 @@ drop_all(struct xdp_md *ctx)
 	tcp->ack_seq = tmp_seq;
 
 	// set the current state in the value field
+	request->op    = PROT_OP_REPLY;
 	request->value = *state_lookup;
 
 	// reverse source and destination ip
