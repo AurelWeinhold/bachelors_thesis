@@ -38,7 +38,6 @@ struct state {
 };
 
 static volatile bool exiting = false;
-static struct state *shared_state;
 
 static int
 libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
@@ -131,14 +130,14 @@ send_prot(int socket_fd, struct prot prot)
 }
 
 int
-send_state(int socket_fd)
+send_state(int socket_fd, struct state *state)
 {
-	struct prot reply = { .op = PROT_OP_READ, .value = shared_state->state };
+	struct prot reply = { .op = PROT_OP_READ, .value = state->state };
 	return send_prot(socket_fd, reply);
 }
 
 int
-handle_request(int fd, fd_set *primary_fds)
+handle_request(int fd, fd_set *primary_fds, struct state *state)
 {
 	struct prot request;
 	receive_prot_packet(fd, &request);
@@ -146,20 +145,21 @@ handle_request(int fd, fd_set *primary_fds)
 
 	switch (request.op) {
 	case PROT_OP_READ:
-		send_state(fd);
+		send_state(fd, state);
 		break;
 	case PROT_OP_WRITE:
 		// TODO(Aurel): Implement writing the state.
-		shared_state->state = request.value;
-		printf("Updated state: %d\n", shared_state->state);
-		send_state(fd);
+		state->state = request.value;
+
+		printf("Updated state: %d\n", state->state);
+		send_state(fd, state);
 		break;
 	default:;
 	}
 
 	close(fd);
 	FD_CLR(fd, primary_fds);
-	return 1;
+	return 0;
 }
 
 int
@@ -261,15 +261,9 @@ main(int argc, char **argv)
 	}
 #endif
 
-	// Shared memory for accessing the state in both threads
-	// TODO(Aurel): What does MAP_ANONYMOUS mean?
-	shared_state = mmap(NULL, sizeof(*shared_state), PROT_READ | PROT_WRITE,
-	                    MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	if (shared_state == MAP_FAILED) {
-		fprintf(stderr, "Failed to create shared memory\n");
-		exit(EXIT_FAILURE);
-	}
-	shared_state->state = 3012;
+	struct state state = {
+		.state = 3012,
+	};
 
 	/********************
 	 * Setup the server *
@@ -356,7 +350,7 @@ main(int argc, char **argv)
 
 	// pass state to eBPF program
 	err = bpf_map__update_elem(state_map, &state_keys.state,
-	                           sizeof(state_keys.state), &shared_state->state,
+	                           sizeof(state_keys.state), &state.state,
 	                           sizeof(__u32), 0);
 	if (err) {
 		fprintf(stderr, "Failed updating map writing state. errno %s\n",
@@ -404,7 +398,10 @@ main(int argc, char **argv)
 				} else {
 					// already established connection is sending data
 #ifndef DEBUG_EBPF_ONLY
-					read = handle_request(fd, &primary_fds);
+					err = handle_request(fd, &primary_fds, &state);
+					if (err) {
+						goto cleanup;
+					}
 #endif
 				}
 			}
