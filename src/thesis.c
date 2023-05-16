@@ -137,7 +137,8 @@ send_state(int socket_fd, struct state *state)
 }
 
 int
-handle_request(int fd, fd_set *primary_fds, struct state *state)
+handle_request(int fd, fd_set *primary_fds, struct state *state,
+               struct bpf_map *state_map)
 {
 	struct prot request;
 	receive_prot_packet(fd, &request);
@@ -150,6 +151,15 @@ handle_request(int fd, fd_set *primary_fds, struct state *state)
 	case PROT_OP_WRITE:
 		// TODO(Aurel): Implement writing the state.
 		state->state = request.value;
+		// pass state to eBPF program
+		int err = bpf_map__update_elem(state_map, &state_keys.state,
+		                           sizeof(state_keys.state), &state->state,
+		                           sizeof(__u32), 0);
+		if (err) {
+		fprintf(stderr, "Failed updating map writing state. errno %s\n",
+		        strerror(errno));
+			return 1;
+		}
 
 		printf("Updated state: %d\n", state->state);
 		send_state(fd, state);
@@ -382,7 +392,6 @@ main(int argc, char **argv)
 		}
 
 		// check each fd for data to read
-		int read = 0;
 		for (int fd = 0; fd <= fd_max; fd++) {
 			if (FD_ISSET(fd, &read_fds)) {
 				// connection found
@@ -407,7 +416,7 @@ main(int argc, char **argv)
 				} else {
 					// already established connection is sending data
 #ifndef DEBUG_EBPF_ONLY
-					err = handle_request(fd, &primary_fds, &state);
+					err = handle_request(fd, &primary_fds, &state, state_map);
 					if (err) {
 						goto cleanup;
 					}
