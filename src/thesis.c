@@ -221,26 +221,35 @@ init_socket(int *socket_fd, char *port)
 }
 
 int
-main(int argc, char **argv)
+parse_args(int *port, int *ifindex, char **port_str, int argc, char **argv)
 {
-	struct thesis_bpf *obj;
-
 	// Parse command line arguments
 	if (argc < 3) {
 		fprintf(stderr, "Usage: %s ifindex port\n", argv[0]);
-		exit(EXIT_FAILURE);
+		return 1;
 	}
 
-	int ifindex = atoi(argv[1]);
+	*ifindex = atoi(argv[1]);
 	if (ifindex <= 0) {
 		fprintf(stderr, "ifindex must be at least 1\n");
-		exit(EXIT_FAILURE);
+		return 1;
 	}
 
-	char *port_str = argv[2];
-	int port       = atoi(port_str);
+	*port_str = argv[2];
+	*port     = atoi(*port_str);
 	if (port < 0) {
 		fprintf(stderr, "port needs to be at least 0\n");
+		return 1;
+	}
+	return 0;
+}
+
+int
+main(int argc, char **argv)
+{
+	int port, ifindex;
+	char *port_str;
+	if (parse_args(&port, &ifindex, &port_str, argc, argv)) {
 		exit(EXIT_FAILURE);
 	}
 
