@@ -153,11 +153,11 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 		state->state = request.value;
 		// pass state to eBPF program
 		int err = bpf_map__update_elem(state_map, &state_keys.state,
-		                           sizeof(state_keys.state), &state->state,
-		                           sizeof(__u32), 0);
+		                               sizeof(state_keys.state), &state->state,
+		                               sizeof(__u32), 0);
 		if (err) {
-		fprintf(stderr, "Failed updating map writing state. errno %s\n",
-		        strerror(errno));
+			fprintf(stderr, "Failed updating map writing state. errno %s\n",
+			        strerror(errno));
 			return 1;
 		}
 
