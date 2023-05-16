@@ -85,6 +85,10 @@ drop_all(struct xdp_md *ctx)
 	 * All checks and the lookup were successful.
 	 */
 
+	u32 tmp_seq  = tcp->seq;
+	tcp->seq     = tcp->ack_seq;
+	tcp->ack_seq = tmp_seq;
+
 	// set the current state in the value field
 	request->value = *state_lookup;
 
