@@ -54,6 +54,9 @@ drop_all(struct xdp_md *ctx)
 	if ((void *)tcp + sizeof(*tcp) > data_end)
 		return XDP_PASS;
 
+	if (tcp->syn || tcp->fin || tcp->rst)
+		return XDP_PASS;
+
 	// destination must be `port` (take care of network and host byte order!)
 	if (bpf_ntohs(tcp->dest) != port)
 		return XDP_PASS;
