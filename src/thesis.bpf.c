@@ -61,12 +61,12 @@ drop_all(struct xdp_md *ctx)
 	if (bpf_ntohs(tcp->dest) != port)
 		return XDP_PASS;
 
-	void *base = (void*)tcp + sizeof(*tcp);
+	void *base = (void *)tcp + sizeof(*tcp);
 
 	// TODO(Aurel): What is in the `data_offset`s bytes? Another header?
 	int data_offset = 12;
 	char *data_base = base + data_offset;
-	if ((void*)(data_base + PROT_PACKET_SIZE) > data_end)
+	if ((void *)(data_base + PROT_PACKET_SIZE) > data_end)
 		return XDP_PASS;
 
 	struct prot *request = (struct prot *)data_base;
@@ -79,7 +79,7 @@ drop_all(struct xdp_md *ctx)
 	int *state_lookup = bpf_map_lookup_elem(&state, &state_keys.state);
 	if (!state_lookup)
 		return XDP_PASS;
-	
+
 	/*
 	 * **Only change packet after here!**
 	 * All checks and the lookup were successful.
