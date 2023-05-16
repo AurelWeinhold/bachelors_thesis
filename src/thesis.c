@@ -253,17 +253,17 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	/* Cleaner handling of Ctrl-C */
+	signal(SIGINT, sig_handler);
+	signal(SIGTERM, sig_handler);
+
 #ifndef DEBUG_USERSPACE_ONLY
 	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
 
-	/* Cleaner handling of Ctrl-C */
-	signal(SIGINT, sig_handler);
-	signal(SIGTERM, sig_handler);
-
 	/* Load and verify BPF application */
-	obj = thesis_bpf__open();
+	struct thesis_bpf *obj = thesis_bpf__open();
 	if (!obj) {
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		exit(EXIT_FAILURE);
