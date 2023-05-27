@@ -467,8 +467,8 @@ main(int argc, char **argv)
 		}
 	}
 
-#ifndef DEBUG_USERSPACE_ONLY
 cleanup:
+#ifndef DEBUG_USERSPACE_ONLY
 	/* Clean up eBPF program */
 	thesis_bpf__destroy(obj);
 	fprintf(stderr, "Detached eBPF program.\n");
