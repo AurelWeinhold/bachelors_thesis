@@ -188,6 +188,5 @@ drop_all(struct xdp_md *ctx)
 	bpf_printk("Rerouting packet to %lu:%lu", ipv4->daddr,
 	           bpf_ntohs(tcp->dest));
 #endif
-
 	return XDP_TX;
 }

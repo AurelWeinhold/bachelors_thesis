@@ -188,7 +188,7 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 		                               sizeof(state_keys.speed_limit),
 		                               &state->speed_limit, sizeof(__u32), 0);
 		if (err) {
-			fprintf(stderr, "Failed updating map writing state. errno %s\n",
+			fprintf(stderr, "Failed updating map (speed_limit). errno: %s\n",
 			        strerror(errno));
 			return -1;
 		}
@@ -401,7 +401,7 @@ main(int argc, char **argv)
 	                           sizeof(state_keys.port), &port, sizeof(__u32),
 	                           0);
 	if (err) {
-		fprintf(stderr, "Failed updating map writing port. errno %s\n",
+		fprintf(stderr, "Failed updating map (port). errno: %s\n",
 		        strerror(errno));
 		goto cleanup;
 	}
