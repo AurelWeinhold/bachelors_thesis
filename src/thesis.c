@@ -34,7 +34,7 @@
 #define PORT_LEN 5
 
 struct state {
-	uint32_t state;
+	uint32_t speed_limit;
 };
 
 static volatile bool exiting = false;
@@ -130,9 +130,9 @@ send_prot(int socket_fd, struct prot prot)
 }
 
 int
-send_state(int socket_fd, struct state *state)
+send_speed_limit(int socket_fd, struct state *state)
 {
-	struct prot reply = { .op = PROT_OP_READ, .value = state->state };
+	struct prot reply = { .op = PROT_OP_READ, .value = state->speed_limit };
 	return send_prot(socket_fd, reply);
 }
 
@@ -146,23 +146,23 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 
 	switch (request.op) {
 	case PROT_OP_READ:
-		send_state(fd, state);
+		send_speed_limit(fd, state);
 		break;
 	case PROT_OP_WRITE:
 		// TODO(Aurel): Implement writing the state.
-		state->state = request.value;
+		state->speed_limit = request.value;
 		// pass state to eBPF program
-		int err = bpf_map__update_elem(state_map, &state_keys.state,
-		                               sizeof(state_keys.state), &state->state,
-		                               sizeof(__u32), 0);
+		int err = bpf_map__update_elem(state_map, &state_keys.speed_limit,
+		                               sizeof(state_keys.speed_limit),
+		                               &state->speed_limit, sizeof(__u32), 0);
 		if (err) {
 			fprintf(stderr, "Failed updating map writing state. errno %s\n",
 			        strerror(errno));
 			return 1;
 		}
 
-		printf("Updated state: %d\n", state->state);
-		send_state(fd, state);
+		printf("Updated state: %d\n", state->speed_limit);
+		send_speed_limit(fd, state);
 		break;
 	default:;
 	}
@@ -281,7 +281,7 @@ main(int argc, char **argv)
 #endif
 
 	struct state state = {
-		.state = 3012,
+		.speed_limit = 3012,
 	};
 
 	/********************
@@ -367,12 +367,12 @@ main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	// pass state to eBPF program
-	err = bpf_map__update_elem(state_map, &state_keys.state,
-	                           sizeof(state_keys.state), &state.state,
-	                           sizeof(__u32), 0);
+	// pass speed_limit to eBPF program
+	err = bpf_map__update_elem(state_map, &state_keys.speed_limit,
+	                           sizeof(state_keys.speed_limit),
+	                           &state.speed_limit, sizeof(__u32), 0);
 	if (err) {
-		fprintf(stderr, "Failed updating map writing state. errno %s\n",
+		fprintf(stderr, "Failed updating map (speed_limit). errno: %s\n",
 		        strerror(errno));
 		goto cleanup;
 	}

@@ -132,11 +132,12 @@ drop_all(struct xdp_md *ctx)
 		return XDP_PASS;
 	}
 
-	// get the state
-	int *state_lookup = bpf_map_lookup_elem(&state, &state_keys.state);
-	if (!state_lookup) {
+	// get the speed limit
+	int *speed_limit_lookup =
+			bpf_map_lookup_elem(&state, &state_keys.speed_limit);
+	if (!speed_limit_lookup) {
 #if DEBUG > 1
-		bpf_printk("Failed to look up state");
+		bpf_printk("Failed to look up map (speed_limit)");
 #endif
 		return XDP_PASS;
 	}
@@ -152,7 +153,7 @@ drop_all(struct xdp_md *ctx)
 
 	// set the current state in the value field
 	request->op    = PROT_OP_REPLY;
-	request->value = *state_lookup;
+	request->value = *speed_limit_lookup;
 
 	// reverse source and destination ip
 	__u32 dest_ip = ipv4->daddr;
