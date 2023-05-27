@@ -104,7 +104,7 @@ print_prot(struct prot prot)
 int
 receive_prot_packet(int socket_fd, struct prot *packet)
 {
-	printf("receiving\n");
+	printf("receiving...\n");
 	uint8_t buf[BUF_SIZE];
 	size_t nr_bytes_recv = 0;
 	uint8_t *wr_ptr      = buf;
@@ -197,15 +197,15 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 		send_speed_limit(fd, state);
 		break;
 	case PROT_OP_GET_SPEED_LIMIT:
-		printf("New car arrived.\n");
 		state->cars++;
 		send_speed_limit(fd, state);
+		printf("New car arrived: %d\n", state->cars);
 		break;
 	case PROT_OP_OUT_OF_RANGE:
-		printf("Car left range.\n");
 		state->cars--;
 		close(fd);
 		FD_CLR(fd, primary_fds);
+		printf("Car left range: %d\n", state->cars);
 		break;
 	default:;
 	}
@@ -430,6 +430,7 @@ main(int argc, char **argv)
 	/*******************************************
 	 * start listening to incoming connections *
 	 *******************************************/
+	printf("Server ready for connections:\n");
 	while (!exiting) {
 		// every connection we accept is in primary which we copy to
 		// read_fds to read from
@@ -460,9 +461,8 @@ main(int argc, char **argv)
 							// update max fd
 							fd_max = new_fd;
 						}
-						printf("New connection established @ fd-%d.\n", new_fd);
-
 						// calculate speed limit
+
 #ifndef DEBUG_USERSPACE_ONLY
 						// read state from map
 						// NOTE(Aurel): this is not the actual location of the
@@ -480,6 +480,7 @@ main(int argc, char **argv)
 #endif
 
 						// set speed limit according to function
+						printf("Speed limit: %d\n", state.speed_limit);
 						state.speed_limit = calc_speed_limit(state.cars);
 
 #ifndef DEBUG_USERSPACE_ONLY
