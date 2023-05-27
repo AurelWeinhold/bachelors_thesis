@@ -169,8 +169,12 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
                struct bpf_map *state_map)
 {
 	struct prot request;
-	receive_prot_packet(fd, &request);
+	int err = receive_prot_packet(fd, &request);
 	print_prot(request);
+	if (err < 0) {
+		printf("Error receiving packet\n");
+		return -1;
+	}
 
 	switch (request.op) {
 	case PROT_OP_READ:
@@ -186,7 +190,7 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 		if (err) {
 			fprintf(stderr, "Failed updating map writing state. errno %s\n",
 			        strerror(errno));
-			return 1;
+			return -1;
 		}
 
 		printf("Updated state: %d\n", state->speed_limit);
@@ -454,7 +458,7 @@ main(int argc, char **argv)
 					// already established connection is sending data
 #ifndef DEBUG_EBPF_ONLY
 					err = handle_request(fd, &primary_fds, &state, state_map);
-					if (err) {
+					if (err < 0) {
 						goto cleanup;
 					}
 #endif
