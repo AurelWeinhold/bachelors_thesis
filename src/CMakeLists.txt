@@ -70,7 +70,8 @@ foreach(app ${apps})
   add_dependencies(${app_stem}_skel libbpf-build)
 
   add_executable(${app_stem} ${app_stem}.c)
-  target_link_libraries(${app_stem} ${app_stem}_skel)
+  # link also libm (`m`)
+  target_link_libraries(${app_stem} ${app_stem}_skel m)
   if(${app_stem} STREQUAL profile)
     target_include_directories(${app_stem} PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/../blazesym/target/release/)
