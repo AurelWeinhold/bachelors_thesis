@@ -73,53 +73,46 @@ drop_all(struct xdp_md *ctx)
 	bpf_printk("  dest ip: %d", ipv4->daddr);
 #endif
 
-	// protocol must be TCP
-	if (ipv4->protocol != IPPROTO_TCP) {
+	// protocol must be UDP
+	if (ipv4->protocol != IPPROTO_UDP) {
 #if DEBUG > 1
 		bpf_printk("Wrong protocol: %i", ipv4->protocol);
 #endif
 		return XDP_PASS;
 	}
 
-	// TCP packet must not go over `data_end` edge
-	struct tcphdr *tcp = (void *)ipv4 + sizeof(*ipv4);
-	if ((void *)tcp + sizeof(*tcp) > data_end) {
+	// udp packet must not go over `data_end` edge
+	struct udphdr *udp = (void *)ipv4 + sizeof(*ipv4);
+	if ((void *)udp + sizeof(*udp) > data_end) {
 #if DEBUG > 1
-		bpf_printk("Not a tcp packet");
+		bpf_printk("Not a udp packet");
 #endif
 		return XDP_PASS;
 	}
 
-	if (tcp->syn || tcp->fin || tcp->rst)
-		return XDP_PASS;
-
 #if DEBUG > 1
 	// source and destination port helps identify packets
-	bpf_printk("source port: %d", bpf_ntohs(tcp->source));
-	bpf_printk("  dest port: %d", bpf_ntohs(tcp->dest));
+	bpf_printk("source port: %d", bpf_ntohs(udp->source));
+	bpf_printk("  dest port: %d", bpf_ntohs(udp->dest));
 #endif
 
 	// destination must be `port` (take care of network and host byte order!)
-	if (bpf_ntohs(tcp->dest) != port) {
+	if (bpf_ntohs(udp->dest) != port) {
 #if DEBUG > 1
 		bpf_printk("Different port");
 #endif
 		return XDP_PASS;
 	}
 
-	void *base = (void *)tcp + sizeof(*tcp);
-
-	// TODO(Aurel): What is in the `data_offset`s bytes? Another header?
-	int data_offset = 12;
-	char *data_base = base + data_offset;
-	if ((void *)(data_base + PROT_PACKET_SIZE) > data_end) {
+	void *prot = (void *)udp + sizeof(*udp);
+	if ((void *)(prot + PROT_PACKET_SIZE) > data_end) {
 #if DEBUG > 1
 		bpf_printk("Not the defined protocol");
 #endif
 		return XDP_PASS;
 	}
 
-	struct prot *request = (struct prot *)data_base;
+	struct prot *request = (struct prot *)prot;
 #if DEBUG > 1
 	// printing op-code helps identify packets
 	// TODO(Aurel): Print not only numerical
@@ -167,14 +160,11 @@ drop_all(struct xdp_md *ctx)
 	 * All checks and the lookup were successful.
 	 */
 
+	// reverse mac address
 	u8 tmp_mac[ETH_ALEN];
 	memcpy(tmp_mac, eth->h_dest, ETH_ALEN);
 	memcpy(eth->h_dest, eth->h_source, ETH_ALEN);
 	memcpy(eth->h_source, tmp_mac, ETH_ALEN);
-
-	u32 tmp_seq  = tcp->seq;
-	tcp->seq     = tcp->ack_seq;
-	tcp->ack_seq = tmp_seq;
 
 	// set the current state in the value field
 	request->op    = PROT_OP_REPLY;
@@ -186,14 +176,14 @@ drop_all(struct xdp_md *ctx)
 	ipv4->saddr   = dest_ip;
 
 	// reverse source and destination port
-	__u32 dest_port = tcp->dest;
-	tcp->dest       = tcp->source;
-	tcp->source     = dest_port;
+	__u32 dest_port = udp->dest;
+	udp->dest       = udp->source;
+	udp->source     = dest_port;
 
 #if DEBUG > 0
 	bpf_printk("Successfully read value");
 	bpf_printk("Rerouting packet to %lu:%lu", ipv4->daddr,
-	           bpf_ntohs(tcp->dest));
+	           bpf_ntohs(udp->dest));
 #endif
 	return XDP_TX;
 }
