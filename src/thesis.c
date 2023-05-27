@@ -3,6 +3,7 @@
 
 // shared
 #include <errno.h>
+#include <poll.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,6 +78,8 @@ libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 	 */
 	return vfprintf(stderr, format, args);
 }
+
+enum poll_fds { RECEIVED_MSG };
 
 static void
 sig_handler(int sig)
@@ -343,6 +346,12 @@ main(int argc, char **argv)
 
 	struct state state = { .speed_limit = calc_speed_limit(0), .cars = 0 };
 
+	// setup fds to be polled
+	struct pollfd pollfds[1];
+	pollfds[RECEIVED_MSG] = (struct pollfd){
+		.events = POLLIN,
+	};
+
 	/********************
 	 * Setup the server *
 	 ********************
@@ -358,6 +367,8 @@ main(int argc, char **argv)
 			close(socket_fd);
 		exit(EXIT_FAILURE);
 	}
+	// add socket_fd to fd list for polling
+	pollfds[RECEIVED_MSG].fd = socket_fd;
 
 	int err                   = 0;
 	struct bpf_map *state_map = NULL;
@@ -433,11 +444,38 @@ main(int argc, char **argv)
 	 *******************************************/
 	printf("Server ready for connections:\n");
 	char buf[100];
+	int rc;
+	int pollfds_size = sizeof(pollfds) / sizeof(*pollfds);
 	while (!exiting) {
-		err = handle_request(socket_fd, &state, state_map);
-		if (err < 0) {
-			printf("Error handling request\n");
-			goto cleanup;
+		rc = poll(pollfds, pollfds_size,
+		          /* timeout = */ 100000);
+		if (rc == -1 && errno != EINTR) {
+			perror("poll failed");
+			continue;
+		}
+
+		if (!rc) {
+			// timeout
+			continue;
+		}
+
+		for (int i = 0; i < pollfds_size; ++i) {
+			if (!(pollfds[i].revents & POLLIN)) {
+				// fd not ready
+				continue;
+			}
+			switch (i) {
+			case RECEIVED_MSG:
+				err = handle_request(socket_fd, &state, state_map);
+				if (err < 0) {
+					printf("Error handling request\n");
+					goto cleanup;
+				}
+				break;
+			default:
+				printf("Unknown poll: %d\n", i);
+				continue;
+			}
 		}
 	}
 
