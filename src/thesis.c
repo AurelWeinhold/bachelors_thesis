@@ -133,7 +133,7 @@ send_prot(int socket_fd, struct prot prot)
 int
 send_speed_limit(int socket_fd, struct state *state)
 {
-	struct prot reply = { .op = PROT_OP_READ, .value = state->speed_limit };
+	struct prot reply = { .op = PROT_OP_REPLY, .value = state->speed_limit };
 	return send_prot(socket_fd, reply);
 }
 
