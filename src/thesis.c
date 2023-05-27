@@ -196,11 +196,19 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 		printf("Updated state: %d\n", state->speed_limit);
 		send_speed_limit(fd, state);
 		break;
+	case PROT_OP_GET_SPEED_LIMIT:
+		printf("New car arrived.\n");
+		state->cars++;
+		send_speed_limit(fd, state);
+		break;
+	case PROT_OP_OUT_OF_RANGE:
+		printf("Car left range.\n");
+		state->cars--;
+		close(fd);
+		FD_CLR(fd, primary_fds);
+		break;
 	default:;
 	}
-
-	close(fd);
-	FD_CLR(fd, primary_fds);
 	return 0;
 }
 
@@ -453,6 +461,10 @@ main(int argc, char **argv)
 							fd_max = new_fd;
 						}
 						printf("New connection established @ fd-%d.\n", new_fd);
+
+						// set speed limit according to function
+						state.speed_limit = calc_speed_limit(state.cars);
+
 					}
 				} else {
 					// already established connection is sending data

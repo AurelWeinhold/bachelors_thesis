@@ -51,6 +51,9 @@ enum protocol_op {
 	PROT_OP_READ  = 1,
 	PROT_OP_WRITE = 2,
 	PROT_OP_REPLY = 3,
+
+	PROT_OP_GET_SPEED_LIMIT = 4,
+	PROT_OP_OUT_OF_RANGE    = 5,
 };
 
 #define THESIS_H
