@@ -5,6 +5,9 @@
 
 #include "thesis.h"
 
+#define memcpy __builtin_memcpy
+#define ETH_ALEN 6
+
 #define DEBUG 0
 
 char LICENSE[] SEC("license") = "GPL";
@@ -146,6 +149,11 @@ drop_all(struct xdp_md *ctx)
 	 * **Only change packet after here!**
 	 * All checks and the lookup were successful.
 	 */
+
+	u8 tmp_mac[ETH_ALEN];
+	memcpy(tmp_mac, eth->h_dest, ETH_ALEN);
+	memcpy(eth->h_dest, eth->h_source, ETH_ALEN);
+	memcpy(eth->h_source, tmp_mac, ETH_ALEN);
 
 	u32 tmp_seq  = tcp->seq;
 	tcp->seq     = tcp->ack_seq;
