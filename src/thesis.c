@@ -200,9 +200,18 @@ send_speed_limit(int socket_fd, struct state *state, struct sockaddr_storage to)
 }
 
 int
-handle_request(int socket_fd, struct prot request, struct sockaddr_storage from,
-               struct state *state, struct bpf_map *state_map)
+handle_request(int socket_fd, struct state *state, struct bpf_map *state_map)
 {
+	// TODO(Aurel): When to update speed limit for connections handled by eBPF?
+	struct prot request;
+	struct sockaddr_storage from;
+	int err = wait_and_receive_prot_packet(socket_fd, &request, &from);
+	if (err < 0) {
+		printf("Error receiving packet\n");
+		return -1;
+	}
+	print_prot(request);
+
 	switch (request.op) {
 	case PROT_OP_READ:
 		send_speed_limit(socket_fd, state, from);
@@ -425,16 +434,7 @@ main(int argc, char **argv)
 	printf("Server ready for connections:\n");
 	char buf[100];
 	while (!exiting) {
-		// TODO(Aurel): When to update speed limit for connections handled by eBPF?
-		struct prot request;
-		struct sockaddr_storage from;
-		err = wait_and_receive_prot_packet(socket_fd, &request, &from);
-		if (err < 0) {
-			printf("Error receiving packet\n");
-			goto cleanup;
-		}
-		print_prot(request);
-		err = handle_request(socket_fd, request, from, &state, state_map);
+		err = handle_request(socket_fd, &state, state_map);
 		if (err < 0) {
 			printf("Error handling request\n");
 			goto cleanup;
