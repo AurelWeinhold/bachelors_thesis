@@ -35,6 +35,7 @@
 
 struct state {
 	uint32_t speed_limit;
+	uint32_t cars;
 };
 
 static volatile bool exiting = false;
@@ -280,9 +281,7 @@ main(int argc, char **argv)
 	}
 #endif
 
-	struct state state = {
-		.speed_limit = 3012,
-	};
+	struct state state = { .speed_limit = 3012, .cars = 0 };
 
 	/********************
 	 * Setup the server *
@@ -373,6 +372,16 @@ main(int argc, char **argv)
 	                           &state.speed_limit, sizeof(__u32), 0);
 	if (err) {
 		fprintf(stderr, "Failed updating map (speed_limit). errno: %s\n",
+		        strerror(errno));
+		goto cleanup;
+	}
+
+	// initialize cars
+	err = bpf_map__update_elem(state_map, &state_keys.cars,
+	                           sizeof(state_keys.cars), &state.cars,
+	                           sizeof(__u32), 0);
+	if (err) {
+		fprintf(stderr, "Failed updating map (cars). errno: %s\n",
 		        strerror(errno));
 		goto cleanup;
 	}
