@@ -57,6 +57,7 @@ drop_all(struct xdp_md *ctx)
 		return XDP_PASS;
 	}
 
+	// TODO(Aurel): parse IPv6 packets
 	// IPv4 packet must not be go over `data_end` edge
 	struct iphdr *ipv4 = (void *)eth + sizeof(*eth);
 	if ((void *)ipv4 + sizeof(*ipv4) > data_end) {
@@ -79,8 +80,6 @@ drop_all(struct xdp_md *ctx)
 #endif
 		return XDP_PASS;
 	}
-
-	// TODO(Aurel): parse IPv6 packets
 
 	// TCP packet must not go over `data_end` edge
 	struct tcphdr *tcp = (void *)ipv4 + sizeof(*ipv4);
