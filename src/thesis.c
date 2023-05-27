@@ -462,9 +462,39 @@ main(int argc, char **argv)
 						}
 						printf("New connection established @ fd-%d.\n", new_fd);
 
+						// calculate speed limit
+#ifndef DEBUG_USERSPACE_ONLY
+						// read state from map
+						// NOTE(Aurel): this is not the actual location of the
+						// data, but rather the value copied over
+						uint32_t val;
+						err = bpf_map__lookup_elem(state_map, &state_keys.cars,
+						                           sizeof(state_keys.cars),
+						                           &val, sizeof(__u32), 0);
+						if (!val || err) {
+							fprintf(stderr,
+							        "Failed reading map (cars). errno: %s\n",
+							        strerror(errno));
+							goto cleanup;
+						}
+#endif
+
 						// set speed limit according to function
 						state.speed_limit = calc_speed_limit(state.cars);
 
+#ifndef DEBUG_USERSPACE_ONLY
+						// update map
+						err = bpf_map__update_elem(
+								state_map, &state_keys.speed_limit,
+								sizeof(state_keys.speed_limit),
+								&state.speed_limit, sizeof(__u32), 0);
+						if (err) {
+							fprintf(stderr,
+							        "Failed updating map (speed_limit). errno: %s\n",
+							        strerror(errno));
+							goto cleanup;
+						}
+#endif
 					}
 				} else {
 					// already established connection is sending data

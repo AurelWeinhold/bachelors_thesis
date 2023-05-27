@@ -127,8 +127,8 @@ drop_all(struct xdp_md *ctx)
 	bpf_printk("op: %d", request->op);
 #endif
 
-	// only handle read requests
-	if (request->op != PROT_OP_READ) {
+	// only handle PROT_OP_GET_SPEED_LIMIT requests
+	if (request->op != PROT_OP_GET_SPEED_LIMIT) {
 #if DEBUG > 1
 		bpf_printk("Not a read request");
 #endif
@@ -144,6 +144,16 @@ drop_all(struct xdp_md *ctx)
 #endif
 		return XDP_PASS;
 	}
+
+	// atomic increment of the value at a memory location
+	__sync_fetch_and_add(cars_lookup, 1);
+	/* Same as, but atomic:
+	 *
+	 * int cars = *cars_lookup;
+	 * cars++;
+	 * if (bpf_map_update_elem(&state, &state_keys.cars, &cars, 0) != 0)
+	 *		return XDP_PASS;
+	*/
 
 	/*
 	 * **Only change packet after here!**
