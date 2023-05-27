@@ -346,14 +346,15 @@ main(int argc, char **argv)
 	FD_SET(sockfd, &primary_fds);
 	fd_max = sockfd;
 
+	int err                   = 0;
+	struct bpf_map *state_map = NULL;
 #ifndef DEBUG_USERSPACE_ONLY
 	/**************************
 	 * setup the eBPF program *
 	 **************************/
-	struct bpf_map *state_map = NULL;
 
 	/* Load & verify BPF programs */
-	int err = thesis_bpf__load(obj);
+	err = thesis_bpf__load(obj);
 	if (err) {
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
 		goto cleanup;
