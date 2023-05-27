@@ -136,9 +136,8 @@ drop_all(struct xdp_md *ctx)
 #endif
 		return XDP_PASS;
 	}
-	
-	int *cars_lookup =
-			bpf_map_lookup_elem(&state, &state_keys.cars);
+
+	int *cars_lookup = bpf_map_lookup_elem(&state, &state_keys.cars);
 	if (!cars_lookup) {
 #if DEBUG > 1
 		bpf_printk("Failed to look up map (cars)");
