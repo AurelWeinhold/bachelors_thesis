@@ -183,6 +183,7 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 	case PROT_OP_WRITE:
 		// TODO(Aurel): Implement writing the state.
 		state->speed_limit = request.value;
+#ifndef DEBUG_USERSPACE_ONLY
 		// pass state to eBPF program
 		int err = bpf_map__update_elem(state_map, &state_keys.speed_limit,
 		                               sizeof(state_keys.speed_limit),
@@ -192,6 +193,7 @@ handle_request(int fd, fd_set *primary_fds, struct state *state,
 			        strerror(errno));
 			return -1;
 		}
+#endif
 
 		printf("Updated state: %d\n", state->speed_limit);
 		send_speed_limit(fd, state);
