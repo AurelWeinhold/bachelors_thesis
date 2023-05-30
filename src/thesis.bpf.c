@@ -180,15 +180,15 @@ quick_reply(struct xdp_md *ctx)
 	 * All checks and the lookup were successful.
 	 */
 
+	// set the current state in the value field
+	request->op    = PROT_OP_REPLY;
+	request->value = *speed_limit_lookup;
+
 	// reverse mac address
 	u8 tmp_mac[ETH_ALEN];
 	memcpy(tmp_mac, eth->h_dest, ETH_ALEN);
 	memcpy(eth->h_dest, eth->h_source, ETH_ALEN);
 	memcpy(eth->h_source, tmp_mac, ETH_ALEN);
-
-	// set the current state in the value field
-	request->op    = PROT_OP_REPLY;
-	request->value = *speed_limit_lookup;
 
 	// reverse source and destination ip
 	__u32 dest_ip = ipv4->daddr;
