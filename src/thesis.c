@@ -439,6 +439,7 @@ main(int argc, char **argv)
 	int rc;
 	int pollfds_size = sizeof(pollfds) / sizeof(*pollfds);
 	while (!exiting) {
+#ifndef DEBUG_EBPF_ONLY
 		rc = poll(pollfds, pollfds_size,
 		          /* timeout = */ POLL_WAIT_S * 1000);
 		if (rc == -1 && errno != EINTR) {
@@ -469,6 +470,9 @@ main(int argc, char **argv)
 				continue;
 			}
 		}
+#else
+		pause(); // pause until delivery of a signal
+#endif
 	}
 
 cleanup:
