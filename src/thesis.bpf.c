@@ -7,9 +7,9 @@
 #include "speed_limit.h"
 #include "thesis.h"
 
-#define memcpy __builtin_memcpy
-#define ETH_ALEN 6
 
+#define memcpy   __builtin_memcpy
+#define ETH_ALEN 6
 
 char LICENSE[] SEC("license") = "GPL";
 
