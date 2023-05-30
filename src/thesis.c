@@ -98,7 +98,10 @@ update_speed_limit(struct state *state, struct bpf_map *state_map)
 #endif
 
 	// set speed limit according to function
+#if DEBUG > 0
+	printf("cars: %d\n", state->cars);
 	printf("Speed limit: %d\n", state->speed_limit);
+#endif
 	state->speed_limit = calc_speed_limit(state->cars);
 
 #ifndef DEBUG_USERSPACE_ONLY
@@ -140,8 +143,6 @@ int
 wait_and_receive_prot_packet(int socket_fd, struct prot *packet,
                              struct sockaddr_storage *from)
 {
-	printf("waiting and receiving...\n");
-
 	size_t nr_bytes_recv = 0;
 	uint8_t buf[BUF_SIZE];
 	socklen_t addr_len = sizeof(*from);
@@ -154,9 +155,6 @@ wait_and_receive_prot_packet(int socket_fd, struct prot *packet,
 	char s[INET_ADDRSTRLEN];
 	inet_ntop(from->ss_family, get_in_addr((struct sockaddr *)from), s,
 	          sizeof(s));
-
-	printf("listener: got packet from %s\n", s);
-	printf("listener: packet is %zu bytes long\n", nr_bytes_recv);
 
 	if (nr_bytes_recv != PROT_PACKET_SIZE) {
 		printf("error receiving: received %zu bytes\n", nr_bytes_recv);
@@ -198,7 +196,10 @@ handle_request(int socket_fd, struct state *state, struct bpf_map *state_map)
 		printf("Error receiving packet\n");
 		return -1;
 	}
+#if DEBUG > 0
+	printf("Handling request:\n");
 	print_prot(request);
+#endif
 
 	switch (request.op) {
 	case PROT_OP_READ:
@@ -218,15 +219,12 @@ handle_request(int socket_fd, struct state *state, struct bpf_map *state_map)
 			return -1;
 		}
 #endif
-
-		printf("Updated state: %d\n", state->speed_limit);
 		send_speed_limit(socket_fd, state, from);
 		break;
 	case PROT_OP_GET_SPEED_LIMIT:
 		state->cars++;
 		update_speed_limit(state, state_map);
 		send_speed_limit(socket_fd, state, from);
-		printf("New car arrived: %d\n", state->cars);
 		break;
 	case PROT_OP_OUT_OF_RANGE:
 		state->cars--;
@@ -242,7 +240,6 @@ handle_request(int socket_fd, struct state *state, struct bpf_map *state_map)
 		}
 #endif
 		update_speed_limit(state, state_map);
-		printf("Car left range: %d\n", state->cars);
 		break;
 	default:;
 	}
@@ -269,13 +266,13 @@ init_socket(int *socket_fd, char *port)
 	for (p = servinfo; p != NULL; p = p->ai_next) {
 		if ((*socket_fd = socket(p->ai_family, p->ai_socktype,
 		                         p->ai_protocol)) == -1) {
-			perror("listener: socket");
+			perror("socket");
 			continue;
 		}
 
 		if (bind(*socket_fd, p->ai_addr, p->ai_addrlen) == -1) {
 			close(*socket_fd);
-			perror("listener: bind");
+			perror("bind");
 			continue;
 		}
 
@@ -283,7 +280,7 @@ init_socket(int *socket_fd, char *port)
 	}
 
 	if (p == NULL) {
-		fprintf(stderr, "listener: failed to bind socket\n");
+		fprintf(stderr, "failed to bind socket\n");
 		return 2;
 	}
 
@@ -369,6 +366,7 @@ main(int argc, char **argv)
 
 	int err                   = 0;
 	struct bpf_map *state_map = NULL;
+
 #ifndef DEBUG_USERSPACE_ONLY
 	/**************************
 	 * setup the eBPF program *
@@ -464,12 +462,12 @@ main(int argc, char **argv)
 			case RECEIVED_MSG:
 				err = handle_request(socket_fd, &state, state_map);
 				if (err < 0) {
-					printf("Error handling request\n");
+					fprintf(stderr, "Error handling request\n");
 					goto cleanup;
 				}
 				break;
 			default:
-				printf("Unknown poll: %d\n", i);
+				fprintf(stderr, "Unknown poll: %d\n", i);
 				continue;
 			}
 		}

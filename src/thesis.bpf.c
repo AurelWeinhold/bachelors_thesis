@@ -142,9 +142,17 @@ quick_reply(struct xdp_md *ctx)
 	if (request->op == PROT_OP_OUT_OF_RANGE) {
 		// NOTE(Aurel): For PROT_OP_OUT_OF_RANGE need only the car counter to be
 		// decremented and the packet discarded.
+#if DEBUG > 0
+		bpf_printk("PROT_OP_OUT_OF_RANGE");
+#endif
 		__sync_fetch_and_add(cars_lookup, -1);
 		return XDP_DROP;
 	}
+
+	// PROT_OP_GET_SPEED_LIMIT
+#if DEBUG > 0
+	bpf_printk("PROT_OP_GET_SPEED_LIMIT");
+#endif
 
 	// atomic increment of the value at a memory location
 	__sync_fetch_and_add(cars_lookup, 1);
@@ -205,5 +213,7 @@ quick_reply(struct xdp_md *ctx)
 	bpf_printk("Rerouting packet to %lu:%lu", ipv4->daddr,
 	           bpf_ntohs(udp->dest));
 #endif
+
+	// outgoing XDP interface
 	return XDP_TX;
 }
