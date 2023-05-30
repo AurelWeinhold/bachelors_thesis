@@ -18,10 +18,11 @@ struct {
 	__type(key, char[MAX_KEY_LEN]);
 	__type(value, __u32);
 } state SEC(".maps");
+// TODO(Aurel): move port into read-only bpf configuration variable!
 
 SEC("xdp")
 int
-drop_all(struct xdp_md *ctx)
+quick_reply(struct xdp_md *ctx)
 {
 #if DEBUG > 1
 	// some spacing helps differentiate between the individual packets

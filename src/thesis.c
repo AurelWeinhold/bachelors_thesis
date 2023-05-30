@@ -385,19 +385,8 @@ main(int argc, char **argv)
 	}
 
 	/* Attach to XDP stage */
-	// struct bpf_link bpf_program__attach_xdp(const struct bpf_program, int ifindex)
-	/*
-		 * struct bpf_link {
-		 *		atomic64_t refcnt;
-		 * 		u32 id;
-		 * 		enum bpf_link_type type;
-		 * 		const struct bpf_link_ops *ops;
-		 * 		struct bpf_prog *prog;
-		 * 		struct work_struct work;
-		 * };
-		 */
 	struct bpf_link *link =
-			bpf_program__attach_xdp(obj->progs.drop_all, ifindex);
+			bpf_program__attach_xdp(obj->progs.quick_reply, ifindex);
 	if (!link) {
 		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 		goto cleanup;
