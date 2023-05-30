@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include "prot.h"
 #include "thesis.h"
 #include "thesis.skel.h"
 

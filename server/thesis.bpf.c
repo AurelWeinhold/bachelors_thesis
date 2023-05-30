@@ -4,6 +4,7 @@
 #include <bpf/bpf_helpers.h>
 
 #include "config.h"
+#include "prot.h"
 #include "speed_limit.h"
 #include "thesis.h"
 
