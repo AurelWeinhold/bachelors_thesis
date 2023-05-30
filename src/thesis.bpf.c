@@ -120,10 +120,12 @@ quick_reply(struct xdp_md *ctx)
 	bpf_printk("op: %d", request->op);
 #endif
 
-	// only handle PROT_OP_GET_SPEED_LIMIT requests
-	if (request->op != PROT_OP_GET_SPEED_LIMIT) {
+	// only handle PROT_OP_GET_SPEED_LIMIT and PROT_OP_OUT_OF_RANGE requests
+	if (request->op != PROT_OP_GET_SPEED_LIMIT &&
+	    request->op != PROT_OP_OUT_OF_RANGE) {
 #if DEBUG > 1
-		bpf_printk("Not a read request");
+		bpf_printk(
+				"Neither a PROT_OP_GET_SPEED_LIMIT nor PROT_OP_OUT_OF_RANGE request");
 #endif
 		return XDP_PASS;
 	}
@@ -135,6 +137,14 @@ quick_reply(struct xdp_md *ctx)
 #endif
 		return XDP_PASS;
 	}
+
+	if (request->op == PROT_OP_OUT_OF_RANGE) {
+		// NOTE(Aurel): For PROT_OP_OUT_OF_RANGE need only the car counter to be
+		// decremented and the packet discarded.
+		__sync_fetch_and_add(cars_lookup, -1);
+		return XDP_DROP;
+	}
+
 	// atomic increment of the value at a memory location
 	__sync_fetch_and_add(cars_lookup, 1);
 	/* Same as, but atomic:
