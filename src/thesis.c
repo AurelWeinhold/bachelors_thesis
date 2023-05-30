@@ -87,10 +87,10 @@ update_speed_limit(struct state *state, struct bpf_map *state_map)
 	// read cars from map
 	// NOTE(Aurel): this is not the actual location of the
 	// data, but rather the value copied over
-	uint32_t val;
 	err = bpf_map__lookup_elem(state_map, &state_keys.cars,
-	                           sizeof(state_keys.cars), &val, sizeof(__u32), 0);
-	if (!val || err) {
+	                           sizeof(state_keys.cars), &state->cars,
+	                           sizeof(__u32), 0);
+	if (err) {
 		fprintf(stderr, "Failed reading map (cars). errno: %s\n",
 		        strerror(errno));
 		return -1;
