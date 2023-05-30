@@ -4,6 +4,7 @@
 #include <bpf/bpf_helpers.h>
 
 #include "config.h"
+#include "speed_limit.h"
 #include "thesis.h"
 
 #define memcpy __builtin_memcpy
@@ -164,6 +165,15 @@ quick_reply(struct xdp_md *ctx)
 #endif
 		return XDP_PASS;
 	}
+
+#ifdef DEBUG_EBPF_ONLY
+	if (*cars_lookup < SPEED_LIMIT_DROP_START)
+		*speed_limit_lookup = SPEED_LIMIT_MAX;
+	else if (*cars_lookup < SPEED_LIMIT_DROP_STOP)
+		*speed_limit_lookup = SPEED_LIMIT_DROP_FUNC(*cars_lookup);
+	else
+		*speed_limit_lookup = SPEED_LIMIT_MIN;
+#endif
 
 	/*
 	 * **Only change packet after here!**
