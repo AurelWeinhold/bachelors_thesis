@@ -230,6 +230,18 @@ handle_request(int socket_fd, struct state *state, struct bpf_map *state_map)
 		break;
 	case PROT_OP_OUT_OF_RANGE:
 		state->cars--;
+#ifndef DEBUG_USERSPACE_ONLY
+		// pass state to eBPF program
+		err = bpf_map__update_elem(state_map, &state_keys.cars,
+		                           sizeof(state_keys.cars), &state->cars,
+		                           sizeof(__u32), 0);
+		if (err) {
+			fprintf(stderr, "Failed updating map (cars). errno: %s\n",
+			        strerror(errno));
+			return -1;
+		}
+#endif
+		update_speed_limit(state, state_map);
 		printf("Car left range: %d\n", state->cars);
 		break;
 	default:;
