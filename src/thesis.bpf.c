@@ -128,16 +128,6 @@ quick_reply(struct xdp_md *ctx)
 		return XDP_PASS;
 	}
 
-	// get the speed limit
-	int *speed_limit_lookup =
-			bpf_map_lookup_elem(&state, &state_keys.speed_limit);
-	if (!speed_limit_lookup) {
-#if DEBUG > 1
-		bpf_printk("Failed to look up map (speed_limit)");
-#endif
-		return XDP_PASS;
-	}
-
 	int *cars_lookup = bpf_map_lookup_elem(&state, &state_keys.cars);
 	if (!cars_lookup) {
 #if DEBUG > 1
@@ -154,6 +144,16 @@ quick_reply(struct xdp_md *ctx)
 	 * if (bpf_map_update_elem(&state, &state_keys.cars, &cars, 0) != 0)
 	 *		return XDP_PASS;
 	*/
+
+	// get the speed limit
+	int *speed_limit_lookup =
+			bpf_map_lookup_elem(&state, &state_keys.speed_limit);
+	if (!speed_limit_lookup) {
+#if DEBUG > 1
+		bpf_printk("Failed to look up map (speed_limit)");
+#endif
+		return XDP_PASS;
+	}
 
 	/*
 	 * **Only change packet after here!**
