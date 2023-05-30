@@ -449,6 +449,9 @@ main(int argc, char **argv)
 
 		if (!rc) {
 			// timeout
+
+			// recalculate speed limit
+			update_speed_limit(&state, state_map);
 			continue;
 		}
 
