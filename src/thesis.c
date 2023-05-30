@@ -31,8 +31,7 @@
 #include "speed_limit.h"
 
 #define MAX_CONNECTIONS 100
-// TODO(Aurel): Make BUF_SIZE == PROT_PACKET_SIZE
-#define BUF_SIZE 256
+#define BUF_SIZE PROT_PACKET_SIZE
 #define PORT_LEN 5
 
 double
