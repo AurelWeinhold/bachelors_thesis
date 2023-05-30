@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 /* Copyright (c) 2020 Facebook */
 
+#include "config.h"
+
 // shared
 #include <errno.h>
 #include <poll.h>
@@ -29,18 +31,11 @@
 #include "thesis.h"
 #include "thesis.skel.h"
 
-//#define DEBUG_USERSPACE_ONLY
-//#define DEBUG_EBPF_ONLY
 
 #define MAX_CONNECTIONS 100
 // TODO(Aurel): Make BUF_SIZE == PROT_PACKET_SIZE
 #define BUF_SIZE 256
 #define PORT_LEN 5
-
-#define SPEED_LIMIT_DROP_START 30
-#define SPEED_LIMIT_DROP_STOP 100
-#define SPEED_LIMIT_MAX 120
-#define SPEED_LIMIT_MIN 30
 
 #define DY (SPEED_LIMIT_MAX - SPEED_LIMIT_MIN)
 #define DX (SPEED_LIMIT_DROP_STOP - SPEED_LIMIT_DROP_START)
@@ -437,7 +432,7 @@ main(int argc, char **argv)
 	int pollfds_size = sizeof(pollfds) / sizeof(*pollfds);
 	while (!exiting) {
 		rc = poll(pollfds, pollfds_size,
-		          /* timeout = */ 100000);
+		          /* timeout = */ POLL_WAIT_S * 1000);
 		if (rc == -1 && errno != EINTR) {
 			perror("poll failed");
 			continue;

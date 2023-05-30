@@ -3,12 +3,12 @@
 #include <bpf/bpf_endian.h>
 #include <bpf/bpf_helpers.h>
 
+#include "config.h"
 #include "thesis.h"
 
 #define memcpy __builtin_memcpy
 #define ETH_ALEN 6
 
-#define DEBUG 0
 
 char LICENSE[] SEC("license") = "GPL";
 
