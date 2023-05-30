@@ -392,6 +392,12 @@ main(int argc, char **argv)
 
 	// NOTE(Aurel): filter needs to be loaded to access appropriate memory
 	state_map = obj->maps.state;
+	/*
+	 * NOTE(Aurel): Does not work as the fd is only written to by the user
+	 * space. Kernel space directly accesses the memory behind it.
+	 * int map_fd = bpf_map__fd(state_map); // get state map fd
+	 * pollfds[MAP_UPDATE].fd = socket_fd;  // add to pollfds
+	 */
 
 	// NOTE(Aurel): See header for state map keys
 	// pass port to eBPF program
