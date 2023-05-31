@@ -23,8 +23,8 @@
 #define MAX_PORT_LEN     5
 #define MAX_DATA_SIZE    100
 
-#define MEASURE_CLOCK_TIME
-#define MEASURE_WALL_TIME
+//#define MEASURE_CLOCK_TIME
+//#define MEASURE_WALL_TIME
 
 // get sockaddr, IPv4 or IPv6:
 void *
