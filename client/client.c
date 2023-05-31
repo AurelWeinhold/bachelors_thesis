@@ -137,7 +137,6 @@ main(int argc, char *argv[])
 
 	// operation
 
-	printf("%d: in range\n", car_nr);
 	struct prot request = create_prot(PROT_OP_GET_SPEED_LIMIT, 0);
 	struct prot reply;
 	int err;
@@ -171,14 +170,18 @@ main(int argc, char *argv[])
 
 #ifdef MEASURE_CLOCK_TIME
 	double c_d = (double)(c_end - c_start) / (CLOCKS_PER_SEC * nr_runs);
-	printf("%f\n", c_d);
+	printf("%f", c_d);
+#endif
+#if defined(MEASURE_CLOCK_TIME) && defined(MEASURE_WALL_TIME)
+	printf(";");
 #endif
 #ifdef MEASURE_WALL_TIME
 	double t_d = (t_end - t_start) / nr_runs;
-	printf("%f\n", t_d);
+	printf("%f", t_d);
 #endif
 #if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
-	exit(0);
+	printf("\n");
+	return 0;
 #endif
 
 	printf("%d: speed limit: %d\n", car_nr, reply.value);
