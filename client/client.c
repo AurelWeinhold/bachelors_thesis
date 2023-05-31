@@ -99,8 +99,11 @@ int
 main(int argc, char *argv[])
 {
 	int car_nr = 0;
-	if (argc == 2)
-		car_nr = atoi(argv[1]);
+	int nr_runs = 0;
+	if (argc > 1)
+		nr_runs = atoi(argv[1]);
+	if (argc == 3)
+		car_nr = atoi(argv[2]);
 
 	int sockfd;
 	struct addrinfo hints, *servinfo, *p;
@@ -136,19 +139,28 @@ main(int argc, char *argv[])
 
 	printf("%d: in range\n", car_nr);
 	struct prot request = create_prot(PROT_OP_GET_SPEED_LIMIT, 0);
+	struct prot reply;
+	int err;
 #ifdef MEASURE_CLOCK_TIME
 	clock_t c_start = clock();
 #endif
 #ifdef MEASURE_WALL_TIME
 	time_t t_start = time(NULL);
 #endif
+#if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
+	for (int i = 0; i < nr_runs; ++i) {
+#endif
 
-	int err = send_prot(sockfd, request, p);
+	err = send_prot(sockfd, request, p);
 	if (err < 0) {
 		return 1;
 		printf("Error sending packet\n");
 	}
-	struct prot reply = receive_prot(sockfd, p);
+	reply = receive_prot(sockfd, p);
+
+#if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
+	}
+#endif
 
 #ifdef MEASURE_CLOCK_TIME
 	clock_t c_end = clock();
@@ -158,11 +170,11 @@ main(int argc, char *argv[])
 #endif
 
 #ifdef MEASURE_CLOCK_TIME
-	double c_d    = (double)(c_end - c_start) / CLOCKS_PER_SEC;
+	double c_d = (double)(c_end - c_start) / (CLOCKS_PER_SEC * nr_runs);
 	printf("%f\n", c_d);
 #endif
 #ifdef MEASURE_WALL_TIME
-	double t_d   = t_end - t_start;
+	double t_d = (t_end - t_start) / nr_runs;
 	printf("%f\n", t_d);
 #endif
 #if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
