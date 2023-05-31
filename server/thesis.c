@@ -32,8 +32,8 @@
 #include "speed_limit.h"
 
 #define MAX_CONNECTIONS 100
-#define BUF_SIZE PROT_PACKET_SIZE
-#define PORT_LEN 5
+#define BUF_SIZE        PROT_PACKET_SIZE
+#define PORT_LEN        5
 
 double
 calc_speed_limit(int x)
