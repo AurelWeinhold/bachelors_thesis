@@ -315,6 +315,13 @@ parse_args(int *port, int *ifindex, char **port_str, int argc, char **argv)
 int
 main(int argc, char **argv)
 {
+#ifdef DEBUG_USERSPACE_ONLY
+	printf("Userspace only\n");
+#endif
+#ifdef DEBUG_EBPF_ONLY
+	printf("EBPF only\n");
+#endif
+
 	int port, ifindex;
 	char *port_str;
 	if (parse_args(&port, &ifindex, &port_str, argc, argv)) {

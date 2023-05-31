@@ -75,20 +75,26 @@ file(GLOB apps *.bpf.c)
 if(NOT CARGO_EXISTS)
   list(REMOVE_ITEM apps ${CMAKE_CURRENT_SOURCE_DIR}/profile.bpf.c)
 endif()
-foreach(app ${apps})
-  get_filename_component(app_stem ${app} NAME_WE)
 
-  # Build object skeleton and depend skeleton on libbpf build
-  bpf_object(${app_stem} ${app_stem}.bpf.c)
-  add_dependencies(${app_stem}_skel libbpf-build bpftool-build)
 
-  add_executable(${app_stem} ${app_stem}.c)
+set(target thesis)
+
+bpf_object(${target} ${target}.bpf.c)
+add_dependencies(${target}_skel libbpf-build bpftool-build)
+
+set(targets ${target} ${target}_userspace ${target}_ebpf)
+foreach(app ${targets})
+  add_executable(${app} ${target}.c)
+  #target_include_directories(${target} PUBLIC $(CMAKE_CURRENT_SOURCE_DIR)/include)
   # link also libm (`m`)
-  target_link_libraries(${app_stem} ${app_stem}_skel m)
-  if(${app_stem} STREQUAL profile)
-    target_include_directories(${app_stem} PRIVATE
+  target_link_libraries(${app} ${target}_skel m)
+  if(${target} STREQUAL profile)
+    target_include_directories(${app} PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/../blazesym/target/release/)
-    target_link_libraries(${app_stem}
+    target_link_libraries(${app}
       ${CMAKE_CURRENT_SOURCE_DIR}/../blazesym/target/release/libblazesym.a -lpthread -lrt -ldl)
   endif()
 endforeach()
+
+target_compile_definitions(${target}_userspace PUBLIC DEBUG_USERSPACE_ONLY)
+target_compile_definitions(${target}_ebpf PUBLIC DEBUG_EBPF_ONLY)
