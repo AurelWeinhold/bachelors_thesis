@@ -149,19 +149,26 @@ main(int argc, char *argv[])
 		printf("Error sending packet\n");
 	}
 	struct prot reply = receive_prot(sockfd, p);
+
 #ifdef MEASURE_CLOCK_TIME
 	clock_t c_end = clock();
+#endif
+#ifdef MEASURE_WALL_TIME
+	time_t t_end = time(NULL);
+#endif
+
+#ifdef MEASURE_CLOCK_TIME
 	double c_d    = (double)(c_end - c_start) / CLOCKS_PER_SEC;
 	printf("%f\n", c_d);
 #endif
 #ifdef MEASURE_WALL_TIME
-	time_t t_end = time(NULL);
 	double t_d   = t_end - t_start;
 	printf("%f\n", t_d);
 #endif
 #if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
 	exit(0);
 #endif
+
 	printf("%d: speed limit: %d\n", car_nr, reply.value);
 	int w = 2.0 * 60 * 60 / reply.value;
 	printf("%d: sleeping %ds\n", car_nr, w);
