@@ -169,14 +169,14 @@ main(int argc, char *argv[])
 #endif
 
 #ifdef MEASURE_CLOCK_TIME
-	double c_d = (double)(c_end - c_start) / (CLOCKS_PER_SEC * nr_runs);
+	double c_d = (double)(c_end - c_start) / (CLOCKS_PER_SEC);
 	printf("%f", c_d);
 #endif
 #if defined(MEASURE_CLOCK_TIME) && defined(MEASURE_WALL_TIME)
 	printf(";");
 #endif
 #ifdef MEASURE_WALL_TIME
-	double t_d = (t_end - t_start) / nr_runs;
+	double t_d = (t_end - t_start);
 	printf("%f", t_d);
 #endif
 #if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
