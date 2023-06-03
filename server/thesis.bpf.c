@@ -60,8 +60,16 @@ quick_reply(struct xdp_md *ctx)
 		return XDP_PASS;
 	}
 
-	// TODO(Aurel): parse IPv6 packets
-	// IPv4 packet must not be go over `data_end` edge
+	// NOTE(Aurel): See [here](https://standards-oui.ieee.org/ethertype/eth.txt)
+	// TODO(Aurel): parse IPv6 packets: h_proto == 0x86dd
+	// actually check, that is an IPv4 packet
+	if (eth->h_proto != bpf_ntohs(0x0800)) {
+#if DEBUG > 1
+		bpf_printk("Not an ipv4 packet");
+#endif
+		return XDP_PASS;
+	}
+
 	struct iphdr *ipv4 = (void *)eth + sizeof(*eth);
 	if ((void *)ipv4 + sizeof(*ipv4) > data_end) {
 #if DEBUG > 1
