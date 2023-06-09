@@ -107,9 +107,6 @@ main(int argc, char *argv[])
 	int nr_packets = 0;
 	int car_id     = 0;
 
-	printf("%d\n", argc);
-	exit(1);
-
 	if (argc < 5) {
 		fprintf(stderr,
 		        "Too few arguments.\nUsage\n%s IP PORT NR_THREADS NR_PACKETS [ID]\n",
