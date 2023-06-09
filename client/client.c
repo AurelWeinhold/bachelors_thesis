@@ -112,7 +112,7 @@ main(int argc, char *argv[])
 
 	if (argc < 5) {
 		fprintf(stderr,
-		        "Too few arguments.\nUsage\n%s IP PORT NR_THREADS NR_PACKETS\n",
+		        "Too few arguments.\nUsage\n%s IP PORT NR_THREADS NR_PACKETS [ID]\n",
 		        argv[0]);
 		return 1;
 	}
