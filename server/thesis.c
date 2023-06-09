@@ -393,7 +393,7 @@ main(int argc, char **argv)
 		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 		goto cleanup;
 	}
-	fprintf(stderr, "Attached eBPF to XDP stage...\n");
+	fprintf(stderr, "Attached eBPF to XDP stage on interface %d...\n", ifindex);
 
 	// NOTE(Aurel): filter needs to be loaded to access appropriate memory
 	state_map = obj->maps.state;

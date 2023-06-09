@@ -98,23 +98,55 @@ receive_prot(int socket_fd, struct addrinfo *p)
 int
 main(int argc, char *argv[])
 {
-	int car_nr = 0;
-	int nr_runs = 0;
-	if (argc > 1)
-		nr_runs = atoi(argv[1]);
-	if (argc == 3)
-		car_nr = atoi(argv[2]);
+	// default values
+	char *ip       = "localhost";
+	char *port     = "8080";
+	int nr_threads = 1;
+	int nr_runs    = 0;
+	int car_id     = 0;
+
+	printf("%d\n", argc);
+	exit(1);
+
+	if (argc < 5) {
+		fprintf(stderr,
+		        "Too few arguments.\nUsage\n%s IP PORT NR_THREADS NR_RUNS\n",
+		        argv[0]);
+		return 1;
+	}
+
+	ip         = argv[1];
+	port       = argv[2];
+	nr_threads = atoi(argv[3]);
+	nr_runs    = atoi(argv[4]);
+	if (argc > 4)
+		car_id = atoi(argv[5]);
+
+	if (nr_threads < 1) {
+		fprintf(stderr, "Argument NR_THREADS must be at least 1.\n");
+		nr_threads = 1;
+	}
+	if (nr_runs < 1) {
+		fprintf(stderr, "Argument NR_RUNS must be at least 1.\n");
+		nr_runs = 1;
+	}
+
+	int pid;
+	for (int i = 0; i < nr_threads - 1; ++i) {
+		car_id++;
+		if ((pid = fork()) == 0)
+			break;
+	}
 
 	int sockfd;
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
-	char *hostname = "localhost", *port = "8080";
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family   = AF_INET; // IPv4
 	hints.ai_socktype = SOCK_DGRAM;
 
-	if ((rv = getaddrinfo(hostname, port, &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(ip, port, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
