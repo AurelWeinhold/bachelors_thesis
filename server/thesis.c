@@ -18,6 +18,9 @@
 #include <bpf/libbpf.h>
 #include <signal.h>
 
+// server
+#include <sys/resource.h>
+
 // networking
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -438,6 +441,10 @@ main(int argc, char **argv)
 	}
 #endif
 
+	struct rusage usage_start;
+	struct rusage usage_end;
+	getrusage(RUSAGE_SELF, &usage_start);
+
 	/*******************************************
 	 * start listening to incoming connections *
 	 *******************************************/
@@ -492,6 +499,12 @@ cleanup:
 	fprintf(stderr, "Detached eBPF program.\n");
 	return err < 0 ? -err : 0;
 #endif
+	getrusage(RUSAGE_SELF, &usage_end);
+
+	printf("start: ru_nvcsw:  %ld\n", usage_start.ru_nvcsw);
+	printf("start: ru_nivcsw: %ld\n", usage_start.ru_nivcsw);
+	printf("end: ru_nvcsw:  %ld\n", usage_end.ru_nvcsw);
+	printf("end: ru_nivcsw: %ld\n", usage_end.ru_nivcsw);
 
 	close(socket_fd);
 	return 0;
