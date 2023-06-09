@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# script config
+NR_RUNS=100
+
 # client config
 IP="192.168.178.66"
 PORT="8080"
@@ -20,7 +23,7 @@ for server in "thesis" "thesis_ebpf" "thesis_userspace"; do
 	printf "clock;wall\n" > ../"${server}_both.csv"
 	sudo ./server/$server 1 $PORT &
 	sleep 3
-	for i in {1..100}; do
+	for i in {1..$NR_RUNS}; do
 		./client/client_clock $ARGS >> ../"${server}_clock.csv"
 		./client/client_wall  $ARGS >> ../"${server}_wall.csv"
 		./client/client_both  $ARGS >> ../"${server}_both.csv"
