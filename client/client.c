@@ -23,6 +23,8 @@
 #define MAX_PORT_LEN     5
 #define MAX_DATA_SIZE    100
 
+#define DEBUG            0
+
 //#define MEASURE_CLOCK_TIME
 //#define MEASURE_WALL_TIME
 
@@ -182,12 +184,18 @@ main(int argc, char *argv[])
 	for (int i = 0; i < nr_runs; ++i) {
 #endif
 
-	err = send_prot(sockfd, request, p);
-	if (err < 0) {
-		return 1;
-		printf("Error sending packet\n");
-	}
-	reply = receive_prot(sockfd, p);
+#if DEBUG > 1
+		printf("sending...\n");
+#endif
+		err = send_prot(sockfd, request, p);
+		if (err < 0) {
+			return 1;
+			printf("Error sending packet\n");
+		}
+		reply = receive_prot(sockfd, p);
+#if DEBUG > 1
+		print_prot(reply);
+#endif
 
 #if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
 	}
@@ -216,10 +224,12 @@ main(int argc, char *argv[])
 	return 0;
 #endif
 
-	printf("%d: speed limit: %d\n", car_nr, reply.value);
 	int w = 2.0 * 60 * 60 / reply.value;
-	printf("%d: sleeping %ds\n", car_nr, w);
-	sleep(10);
+#if DEBUG > 1
+	printf("%d: speed limit: %d\n", car_id, reply.value);
+	printf("%d: sleeping %ds\n", car_id, w);
+#endif
+	sleep(w);
 
 	request = create_prot(PROT_OP_OUT_OF_RANGE, 0);
 	err     = send_prot(sockfd, request, p);
@@ -227,10 +237,11 @@ main(int argc, char *argv[])
 		return 1;
 		printf("Error sending packet\n");
 	}
+#if DEBUG > 0
+	printf("%d: out of range\n", car_id);
+#endif
 
 	// done
-	printf("%d: out of range\n", car_nr);
-
 	close(sockfd);
 	return 0;
 }

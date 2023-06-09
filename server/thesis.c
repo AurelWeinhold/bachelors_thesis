@@ -98,7 +98,7 @@ update_speed_limit(struct state *state, struct bpf_map *state_map)
 #endif
 
 	// set speed limit according to function
-#if DEBUG > 0
+#if DEBUG > 1
 	printf("cars: %d\n", state->cars);
 	printf("Speed limit: %d\n", state->speed_limit);
 #endif
@@ -196,7 +196,7 @@ handle_request(int socket_fd, struct state *state, struct bpf_map *state_map)
 		printf("Error receiving packet\n");
 		return -1;
 	}
-#if DEBUG > 0
+#if DEBUG > 2
 	printf("Handling request:\n");
 	print_prot(request);
 #endif
@@ -315,11 +315,13 @@ parse_args(int *port, int *ifindex, char **port_str, int argc, char **argv)
 int
 main(int argc, char **argv)
 {
+#if DEBUG > 2
 #ifdef DEBUG_USERSPACE_ONLY
 	printf("Userspace only\n");
 #endif
 #ifdef DEBUG_EBPF_ONLY
 	printf("EBPF only\n");
+#endif
 #endif
 
 	int port, ifindex;

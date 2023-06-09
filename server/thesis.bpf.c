@@ -8,7 +8,6 @@
 #include "speed_limit.h"
 #include "thesis.h"
 
-
 #define memcpy   __builtin_memcpy
 #define ETH_ALEN 6
 
