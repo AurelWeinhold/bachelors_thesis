@@ -4,8 +4,9 @@
 //#define DEBUG_USERSPACE_ONLY
 //#define DEBUG_EBPF_ONLY
 
-// how long should poll wait until timeout to recalculate the speed limit
-#define POLL_WAIT_S     1
+// how long should poll wait in seconds until timeout to recalculate the speed
+// limit
+#define POLL_WAIT_S            1
 
 #define SPEED_LIMIT_DROP_START 30
 #define SPEED_LIMIT_DROP_STOP  100
