@@ -22,6 +22,52 @@ struct {
 } state SEC(".maps");
 // TODO(Aurel): move port into read-only bpf configuration variable!
 
+// Taken from:
+// https://gist.github.com/sbernard31/d4fee7518a1ff130452211c0d355b3f7
+__attribute__((__always_inline__)) static inline __u16
+csum_fold_helper(__u64 csum)
+{
+	int i;
+#pragma unroll
+	for (i = 0; i < 4; i++) {
+		if (csum >> 16)
+			csum = (csum & 0xffff) + (csum >> 16);
+	}
+	return ~csum;
+}
+
+__attribute__((__always_inline__)) static inline void
+ipv4_csum_inline(void *iph, __u64 *csum)
+{
+	__u16 *next_iph_u16 = (__u16 *)iph;
+#pragma clang loop unroll(full)
+	for (int i = 0; i < sizeof(struct iphdr) >> 1; i++) {
+		*csum += *next_iph_u16++;
+	}
+	*csum = csum_fold_helper(*csum);
+}
+
+__attribute__((__always_inline__)) static inline void
+ipv4_csum(void *data_start, int data_size, __u64 *csum)
+{
+	*csum = bpf_csum_diff(0, 0, data_start, data_size, *csum);
+	*csum = csum_fold_helper(*csum);
+}
+
+__attribute__((__always_inline__)) static inline void
+ipv4_l4_csum(void *data_start, __u32 data_size, __u64 *csum, struct iphdr *iph)
+{
+	__u32 tmp = 0;
+	*csum     = bpf_csum_diff(0, 0, &iph->saddr, sizeof(__be32), *csum);
+	*csum     = bpf_csum_diff(0, 0, &iph->daddr, sizeof(__be32), *csum);
+	tmp       = __builtin_bswap32((__u32)(iph->protocol));
+	*csum     = bpf_csum_diff(0, 0, &tmp, sizeof(__u32), *csum);
+	tmp       = __builtin_bswap32((__u32)(data_size));
+	*csum     = bpf_csum_diff(0, 0, &tmp, sizeof(__u32), *csum);
+	*csum     = bpf_csum_diff(0, 0, data_start, data_size, *csum);
+	*csum     = csum_fold_helper(*csum);
+}
+
 SEC("xdp")
 int
 quick_reply(struct xdp_md *ctx)
@@ -222,6 +268,23 @@ quick_reply(struct xdp_md *ctx)
 	bpf_printk("Rerouting packet to %lu:%lu", ipv4->daddr,
 	           bpf_ntohs(udp->dest));
 #endif
+
+
+	// Taken from:
+	// https://gist.github.com/sbernard31/d4fee7518a1ff130452211c0d355b3f7
+	// Update IP checksum
+	ipv4->check = 0;
+	__u64 cs   = 0;
+	ipv4_csum(ipv4, sizeof(*ipv4), &cs);
+	ipv4->check = cs;
+
+	// Update UDP checksum
+	__u16 udp_len = sizeof(*udp) + PROT_PACKET_SIZE;
+	udp->check = 0;
+	cs         = 0;
+	ipv4_l4_csum(udp, udp_len, &cs, ipv4);
+	udp->check = cs;
+
 
 	// outgoing XDP interface
 	return XDP_TX;
