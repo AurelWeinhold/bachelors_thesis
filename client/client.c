@@ -104,7 +104,7 @@ main(int argc, char *argv[])
 	char *ip       = "localhost";
 	char *port     = "8080";
 	int nr_threads = 1;
-	int nr_runs    = 0;
+	int nr_packets = 0;
 	int car_id     = 0;
 
 	printf("%d\n", argc);
@@ -112,7 +112,7 @@ main(int argc, char *argv[])
 
 	if (argc < 5) {
 		fprintf(stderr,
-		        "Too few arguments.\nUsage\n%s IP PORT NR_THREADS NR_RUNS\n",
+		        "Too few arguments.\nUsage\n%s IP PORT NR_THREADS NR_PACKETS\n",
 		        argv[0]);
 		return 1;
 	}
@@ -120,7 +120,7 @@ main(int argc, char *argv[])
 	ip         = argv[1];
 	port       = argv[2];
 	nr_threads = atoi(argv[3]);
-	nr_runs    = atoi(argv[4]);
+	nr_packets = atoi(argv[4]);
 	if (argc > 4)
 		car_id = atoi(argv[5]);
 
@@ -128,9 +128,9 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Argument NR_THREADS must be at least 1.\n");
 		nr_threads = 1;
 	}
-	if (nr_runs < 1) {
-		fprintf(stderr, "Argument NR_RUNS must be at least 1.\n");
-		nr_runs = 1;
+	if (nr_packets < 1) {
+		fprintf(stderr, "Argument NR_PACKETS must be at least 1.\n");
+		nr_packets = 1;
 	}
 
 	int pid;
@@ -181,7 +181,7 @@ main(int argc, char *argv[])
 	time_t t_start = time(NULL);
 #endif
 #if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
-	for (int i = 0; i < nr_runs; ++i) {
+	for (int i = 0; i < nr_packets; ++i) {
 #endif
 
 #if DEBUG > 1

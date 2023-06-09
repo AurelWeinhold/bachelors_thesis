@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
+# client config
 IP="192.168.178.66"
 PORT="8080"
 NR_THREADS=1
-NR_RUNS=1000
-ARGS="$IP $PORT $NR_THREADS $NR_RUNS"
+NR_PACKETS=1000
+
+
+ARGS="$IP $PORT $NR_THREADS $NR_PACKETS"
 
 mkdir -p build
 cd build
