@@ -18,7 +18,7 @@ for server in "thesis" "thesis_ebpf" "thesis_userspace"; do
 	printf "clock\n" > ../"${server}_clock.csv"
 	printf "wall\n" > ../"${server}_wall.csv"
 	printf "clock;wall\n" > ../"${server}_both.csv"
-	sudo ./server/$server 1 8080 &
+	sudo ./server/$server 1 $PORT &
 	sleep 3
 	for i in {1..100}; do
 		./client/client_clock $ARGS >> ../"${server}_clock.csv"
