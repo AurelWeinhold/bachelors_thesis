@@ -118,7 +118,7 @@ main(int argc, char *argv[])
 	port       = argv[2];
 	nr_threads = atoi(argv[3]);
 	nr_packets = atoi(argv[4]);
-	if (argc > 4)
+	if (argc == 6)
 		car_id = atoi(argv[5]);
 
 	if (nr_threads < 1) {
