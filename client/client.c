@@ -101,25 +101,27 @@ int
 main(int argc, char *argv[])
 {
 	// default values
+	char *fprefix  = "";
 	char *ip       = "localhost";
 	char *port     = "8080";
 	int nr_threads = 1;
 	int nr_packets = 0;
 	int car_id     = 0;
 
-	if (argc < 5) {
+	if (argc < 6) {
 		fprintf(stderr,
 		        "Too few arguments.\nUsage\n%s IP PORT NR_THREADS NR_PACKETS [ID]\n",
 		        argv[0]);
 		return 1;
 	}
 
-	ip         = argv[1];
-	port       = argv[2];
-	nr_threads = atoi(argv[3]);
-	nr_packets = atoi(argv[4]);
-	if (argc == 6)
-		car_id = atoi(argv[5]);
+	fprefix    = argv[1];
+	ip         = argv[2];
+	port       = argv[3];
+	nr_threads = atoi(argv[4]);
+	nr_packets = atoi(argv[5]);
+	if (argc == 7)
+		car_id = atoi(argv[6]);
 
 	if (nr_threads < 1) {
 		fprintf(stderr, "Argument NR_THREADS must be at least 1.\n");
@@ -164,7 +166,6 @@ main(int argc, char *argv[])
 		fprintf(stderr, "failed to create socket\n");
 		return 2;
 	}
-	freeaddrinfo(servinfo);
 
 	// operation
 
@@ -237,6 +238,8 @@ main(int argc, char *argv[])
 #if DEBUG > 0
 	printf("%d: out of range\n", car_id);
 #endif
+
+	freeaddrinfo(servinfo);
 
 	// done
 	close(sockfd);
