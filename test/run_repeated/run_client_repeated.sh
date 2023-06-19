@@ -36,7 +36,8 @@ i=0
 for (( c=1; c<=$NR_RUNS; c++ ))
 do
 	for client in "clock"; do #"wall" "both"; do
-		./build/client/client_$client "run_${run}/${server}_${client}" $ARGS $i
+		./build/client/client_$client "run_${run}/${server}_${client}" $ARGS $i | \
+			tee run_$run/$server.txt
 		#echo "done $client"
 		i=$((i+NR_THREADS))
 	done
