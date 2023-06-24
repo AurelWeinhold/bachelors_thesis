@@ -43,7 +43,7 @@ do
 			continue
 		fi
 		echo $((c -1)) | tee -a "run_${run}/${server}_threads.txt"
-		break 2
+		break 1
 	done
 done
 echo "done"
