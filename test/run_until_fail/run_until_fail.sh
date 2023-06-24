@@ -26,23 +26,24 @@ server="thesis"
 if [[ $# -gt 0 ]]; then
         server="thesis_$1"
 fi
+client="clock"
 
 i=0
 for (( r=0; r<=$NR_RUNS; r++ ))
 do
-        for (( c=120; c<=$NR_THREADS; c++ ))
-        do
-                for client in "clock"; do #"wall" "both"; do
-                        timeout 30s \
-                                ./build/client/client_$client "run_${run}/${server}_${client}" $ARGS $c $NR_PACKETS $i > /dev/null
-                        if [[ "${PIPESTATUS[0]}" -eq "0" ]]; then
-                                i=$((i+NR_THREADS))
-                                sleep 5
-                                continue
-                        fi
-                        echo $((c -1)) | tee -a "run_${run}/${server}_threads.txt"
-                        break 2
-                done
-        done
+	for (( c=120; c<=$NR_THREADS; c++ ))
+	do
+		timeout 30s \
+			./build/client/client_$client "run_${run}/${server}_${client}" $ARGS $c $NR_PACKETS $i > /dev/null
+
+		if [[ "${PIPESTATUS[0]}" -eq "0" ]];
+		then
+			i=$((i+NR_THREADS))
+			sleep 5
+			continue
+		fi
+		echo $((c -1)) | tee -a "run_${run}/${server}_threads.txt"
+		break 2
+	done
 done
 echo "done"
