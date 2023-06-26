@@ -497,7 +497,6 @@ cleanup:
 	/* Clean up eBPF program */
 	thesis_bpf__destroy(obj);
 	fprintf(stderr, "Detached eBPF program.\n");
-	return err < 0 ? -err : 0;
 #endif
 	getrusage(RUSAGE_SELF, &usage_end);
 
@@ -507,5 +506,5 @@ cleanup:
 	printf("end: ru_nivcsw: %ld\n", usage_end.ru_nivcsw);
 
 	close(socket_fd);
-	return 0;
+	return err < 0 ? -err : 0;
 }
