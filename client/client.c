@@ -104,7 +104,7 @@ main(int argc, char *argv[])
 	char *port     = "8080";
 	int nr_threads = 1;
 	int nr_packets = 0;
-	int car_id     = 0;
+	int thread_id  = 0;
 
 	if (argc < 5) {
 		fprintf(stderr,
@@ -118,7 +118,7 @@ main(int argc, char *argv[])
 	nr_threads = atoi(argv[3]);
 	nr_packets = atoi(argv[4]);
 	if (argc == 6)
-		car_id = atoi(argv[5]);
+		thread_id = atoi(argv[5]);
 
 	if (nr_threads < 1) {
 		fprintf(stderr, "Argument NR_THREADS must be at least 1.\n");
@@ -131,7 +131,7 @@ main(int argc, char *argv[])
 
 	int pid;
 	for (int i = 0; i < nr_threads - 1; ++i) {
-		car_id++;
+		thread_id++;
 		if ((pid = fork()) == 0)
 			break;
 	}
