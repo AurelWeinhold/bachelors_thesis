@@ -26,7 +26,6 @@
 #define DEBUG            0
 
 //#define MEASURE_CLOCK_TIME
-//#define MEASURE_WALL_TIME
 
 // get sockaddr, IPv4 or IPv6:
 void *
@@ -174,11 +173,6 @@ main(int argc, char *argv[])
 	int err;
 #ifdef MEASURE_CLOCK_TIME
 	clock_t c_start = clock();
-#endif
-#ifdef MEASURE_WALL_TIME
-	time_t t_start = time(NULL);
-#endif
-#if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
 	for (int i = 0; i < nr_packets; ++i) {
 #endif
 
@@ -195,30 +189,11 @@ main(int argc, char *argv[])
 		print_prot(reply);
 #endif
 
-#if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
+#ifdef MEASURE_CLOCK_TIME
 	}
-#endif
-
-#ifdef MEASURE_CLOCK_TIME
 	clock_t c_end = clock();
-#endif
-#ifdef MEASURE_WALL_TIME
-	time_t t_end = time(NULL);
-#endif
-
-#ifdef MEASURE_CLOCK_TIME
 	double c_d = (double)(c_end - c_start) / (CLOCKS_PER_SEC);
-	printf("%f", c_d);
-#endif
-#if defined(MEASURE_CLOCK_TIME) && defined(MEASURE_WALL_TIME)
-	printf(";");
-#endif
-#ifdef MEASURE_WALL_TIME
-	double t_d = (t_end - t_start);
-	printf("%f", t_d);
-#endif
-#if defined(MEASURE_CLOCK_TIME) || defined(MEASURE_WALL_TIME)
-	printf("\n");
+	printf("%f\n", c_d);
 	return 0;
 #endif
 

@@ -105,10 +105,8 @@ quick_reply(struct xdp_md *ctx)
 		return XDP_PASS;
 	}
 
-	// NOTE(Aurel): See [here](https://standards-oui.ieee.org/ethertype/eth.txt)
-	// TODO(Aurel): parse IPv6 packets: h_proto == 0x86dd
 	// actually check, that is an IPv4 packet
-	if (eth->h_proto != bpf_ntohs(0x0800)) {
+	if (eth->h_proto != bpf_ntohs(IPv4_H_PROTO)) {
 #if DEBUG > 1
 		bpf_printk("Not an ipv4 packet");
 #endif
@@ -269,7 +267,7 @@ quick_reply(struct xdp_md *ctx)
 #endif
 
 
-	// Taken from:
+	// Updating the checksums is taken from:
 	// https://gist.github.com/sbernard31/d4fee7518a1ff130452211c0d355b3f7
 	// Update IP checksum
 	ipv4->check = 0;
