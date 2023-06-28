@@ -448,7 +448,9 @@ main(int argc, char **argv)
 	/*******************************************
 	 * start listening to incoming connections *
 	 *******************************************/
+#if DEBUG > 0
 	printf("Server ready for connections:\n");
+#endif
 	char buf[100];
 	int rc;
 	int pollfds_size = sizeof(pollfds) / sizeof(*pollfds);
