@@ -11,6 +11,10 @@
 #define memcpy   __builtin_memcpy
 #define ETH_ALEN 6
 
+// NOTE(Aurel): See [here](https://standards-oui.ieee.org/ethertype/eth.txt)
+// TODO(Aurel): parse IPv6 packets: h_proto == 0x86DD
+#define IPv4_H_PROTO 0x0800
+
 char LICENSE[] SEC("license") = "GPL";
 
 struct {
@@ -21,7 +25,7 @@ struct {
 } state SEC(".maps");
 // TODO(Aurel): move port into read-only bpf configuration variable!
 
-// Taken from:
+// Updating the checksums is taken from:
 // https://gist.github.com/sbernard31/d4fee7518a1ff130452211c0d355b3f7
 __attribute__((__always_inline__)) static inline __u16
 csum_fold_helper(__u64 csum)
