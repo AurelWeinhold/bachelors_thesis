@@ -131,9 +131,9 @@ main(int argc, char *argv[])
 
 	int pid;
 	for (int i = 0; i < nr_threads - 1; ++i) {
-		thread_id++;
 		if ((pid = fork()) == 0)
 			break;
+		thread_id++;
 	}
 
 	int sockfd;
