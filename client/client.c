@@ -190,8 +190,8 @@ main(int argc, char *argv[])
 #ifdef MEASURE_CLOCK_TIME
 	}
 	clock_t c_end = clock();
-	double c_d = (double)(c_end - c_start) / (CLOCKS_PER_SEC);
-	printf("%f\n", c_d);
+	double c_d    = (double)(c_end - c_start) / (CLOCKS_PER_SEC);
+	printf("%d;%f\n", thread_id, c_d);
 	return 0;
 #endif
 
