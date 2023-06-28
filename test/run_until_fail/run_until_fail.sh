@@ -31,7 +31,7 @@ if [[ $# -gt 0 ]]; then
 	elif [[ "$1" == "userspace" ]]; then
 		NR_THREADS_START=120
 	fi
-		
+
 fi
 client="clock"
 
