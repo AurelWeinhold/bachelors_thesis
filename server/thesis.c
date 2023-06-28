@@ -502,10 +502,12 @@ cleanup:
 #endif
 	getrusage(RUSAGE_SELF, &usage_end);
 
-	printf("start: ru_nvcsw:  %ld\n", usage_start.ru_nvcsw);
-	printf("start: ru_nivcsw: %ld\n", usage_start.ru_nivcsw);
-	printf("end: ru_nvcsw:  %ld\n", usage_end.ru_nvcsw);
-	printf("end: ru_nivcsw: %ld\n", usage_end.ru_nivcsw);
+	printf("%ld;", usage_start.ru_nvcsw);
+	printf("%ld;", usage_end.ru_nvcsw);
+	printf("%ld;", usage_start.ru_nivcsw);
+	printf("%ld;", usage_end.ru_nivcsw);
+	printf("%ld;", usage_end.ru_nvcsw - usage_start.ru_nvcsw);
+	printf("%ld;", usage_end.ru_nivcsw - usage_start.ru_nivcsw);
 
 	close(socket_fd);
 	return err < 0 ? -err : 0;
