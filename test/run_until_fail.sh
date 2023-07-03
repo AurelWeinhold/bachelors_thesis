@@ -12,7 +12,7 @@ NR_PACKETS=1000
 
 ARGS="$IP $PORT"
 
-run=$(<nr)
+run=$(<run)
 
 mkdir -p build
 cd build
@@ -53,4 +53,5 @@ do
 		break 1
 	done
 done
-echo "done"
+
+echo $((run + 1)) > nr
