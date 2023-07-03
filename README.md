@@ -9,13 +9,21 @@ To bootstrap the eBPF filter and user space application,
 
 ## Running
 
-To run simply run the executable with `sudo`:
+To execute the server:
 ```shell
-$ sudo ./thesis ifindex port
+$ sudo ./server/thesis[_ebpf|_userspace] ifindex port
 ```
-Find `ifindex` by running `ip link show` and select the appropriate interface.
+- Find `ifindex` by running `ip link show` and select the appropriate interface.
+- `port`, the port you want to block all IPv4, TCP traffic on.
+- `sudo` is needed, as the server attaches the eBPF program to the kernel.
 
-`port`, the port you want to block all IPv4, TCP traffic on.
+To execute the client:
+```
+$ ./client/client[_clock] ip port nrThreads nrPackets [threadId]
+```
+This runs the client starting `nrThreads` threads each sending `nrPackets`
+packets to the server at `ip`@`port`. An optional thread ID can be given for
+debugging.
 
 
 ## Building
@@ -43,7 +51,7 @@ $ dnf install clang elfutils-libelf elfutils-libelf-devel zlib-devel
 
 Download the git repository and check out submodules:
 ```shell
-$ git clone --recurse-submodules https://github.com/libbpf/libbpf-bootstrap
+$ git clone --recurse-submodules https://github.com/AurelWeinhold/bachelors_thesis
 ```
 
 
@@ -52,32 +60,19 @@ $ git clone --recurse-submodules https://github.com/libbpf/libbpf-bootstrap
 ```shell
 $ git submodule update --init --recursive       # check out libbpf
 $ mkdir build && cd build
-$ cmake ../src
+$ cmake ..
 $ make
 ```
 
-
-## Troubleshooting
-
-Libbpf debug logs are quite helpful to pinpoint the exact source of problems, so
-it's usually a good idea to look at them before starting to debug or posting
-question online.
-
-`./minimal` is always running with libbpf debug logs turned on.
-
-For `./bootstrap`, run it in verbose mode (`-v`) to see libbpf debug logs:
-
-```shell
-$ sudo ./bootstrap -v
-libbpf: loading object 'bootstrap_bpf' from buffer
-libbpf: elf: section(2) tp/sched/sched_process_exec, size 384, link 0, flags 6, type=1
-libbpf: sec 'tp/sched/sched_process_exec': found program 'handle_exec' at insn offset 0 (0 bytes), code size 48 insns (384 bytes)
-libbpf: elf: section(3) tp/sched/sched_process_exit, size 432, link 0, flags 6, type=1
-libbpf: sec 'tp/sched/sched_process_exit': found program 'handle_exit' at insn offset 0 (0 bytes), code size 54 insns (432 bytes)
-libbpf: elf: section(4) license, size 13, link 0, flags 3, type=1
-libbpf: license of bootstrap_bpf is Dual BSD/GPL
-...
-```
+This creates two new directories in `build`, client and server, and five
+executables:
+| executable                | description                                                            |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `server/thesis`           | The server application in the "mixed" configuration.                   |
+| `server/thesis_ebpf`      | The server application in the "ebpf-only" configuration.               |
+| `server/thesis_userspace` | The server application in the "user-space-only" configuration.         |
+| `client/client`           | The regular client                                                     |
+| `client/client_clock`     | The regular client, but it prints the clock time measured to `stdout`. |
 
 ### Debugging
 
